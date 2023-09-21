@@ -1,0 +1,21 @@
+node_modules/
+.DS_Store
+/dist/
+/typings/
+
+# editor config
+.idea
+*.iml
+*.swp
+*.swo
+.history
+.codecc
+# istanbul
+coverage
+
+# Logs
+logs
+*.log
+# eslint
+.eslintcache
+.vscode

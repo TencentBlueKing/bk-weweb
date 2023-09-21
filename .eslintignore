@@ -1,0 +1,8 @@
+node_modules
+/lib
+/dev
+/docs
+/plugins
+/src/__tests__/demos
+/*.js
+dist

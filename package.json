@@ -1,0 +1,91 @@
+{
+  "name": "@blueking/bk-weweb",
+  "version": "0.0.22",
+  "description": "bk micro frontend web",
+  "private": false,
+  "main": "dist/index.esm.js",
+  "typings": "./typings",
+  "scripts": {
+    "prepublishOnly": "run-p build generate:decalation",
+    "dev": "run-p vue2:dev vue3:dev instance:dev",
+    "prepublish": "run-s build generate:decalation",
+    "postversion": "git push && git push --tags",
+    "generate:decalation": "tsc -p ./tsconfig.declaration.json",
+    "start": "cross-env NODE_ENV='development' rollup -c scripts/rollup-config.js -w",
+    "build": "cross-env NODE_ENV='production' rollup -c scripts/rollup-config.js --bundleConfigAsCjs",
+    "example:install": "run-p vue2:install vue3:install instance:install doc:install",
+    "vue2:dev": "cd ./examples/vue2 && yarn serve --port 8002",
+    "vue3:dev": "cd ./examples/vue3 && yarn serve --port 8003",
+    "instance:dev": "cd ./examples/instance && yarn serve --port 8004",
+    "vue2:install": "cd ./examples/vue2 && npm i",
+    "vue3:install": "cd ./examples/vue3 && npm i",
+    "doc:install": "cd ./docs && npm i",
+    "doc": "cd ./docs && yarn dev --port 8005",
+    "instance:install": "cd ./examples/instance && npm i",
+    "lint:fix": "eslint ./src/ --ext .js,.ts,.vue --cache --fix",
+    "check": "tsc -p ./tsconfig.json --incremental --noEmit"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "custom micro web"
+  ],
+  "files": [
+    "dist",
+    "typings"
+  ],
+  "author": "bk fe",
+  "license": "MIT",
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint-staged && pnpm check",
+    "commit-msg": "node scripts/verify-commit.mjs"
+  },
+  "lint-staged": {
+    "src/*/*.{js,ts}": [
+      "eslint --ext .tsx,.ts --cache --fix"
+    ]
+  },
+  "devDependencies": {
+    "@babel/core": "^7.22.10",
+    "@babel/plugin-transform-runtime": "^7.22.10",
+    "@babel/preset-env": "^7.22.10",
+    "@babel/runtime": "^7.22.10",
+    "@blueking/stylelint-config": "0.0.3",
+    "@rollup/plugin-babel": "^6.0.3",
+    "@rollup/plugin-node-resolve": "^15.1.0",
+    "@rollup/plugin-terser": "^0.4.3",
+    "@rollup/plugin-typescript": "^11.1.2",
+    "@types/node": "^20.5.0",
+    "@typescript-eslint/eslint-plugin": "^5.20.0",
+    "@typescript-eslint/parser": "^5.20.0",
+    "cross-env": "^7.0.3",
+    "eslint": "8.26.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-config-tencent": "^1.0.4",
+    "eslint-plugin-codecc": "^0.3.0",
+    "eslint-plugin-perfectionist": "^1.5.1",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-vue": "^9.17.0",
+    "lint-staged": "^14.0.0",
+    "npm-run-all": "^4.1.5",
+    "picocolors": "^1.0.0",
+    "postcss-html": "^1.5.0",
+    "postcss-scss": "^4.0.7",
+    "prettier": "^3.0.2",
+    "rollup": "^3.28.0",
+    "simple-git-hooks": "^2.9.0",
+    "stylelint": "^15.10.3",
+    "stylelint-config-recess-order": "^4.3.0",
+    "stylelint-config-recommended-vue": "1.5.0",
+    "stylelint-config-standard": "^34.0.0",
+    "stylelint-order": "^6.0.3",
+    "stylelint-scss": "^5.1.0",
+    "tslib": "^2.6.1",
+    "typescript": "^4.6.3",
+    "vue-eslint-parser": "^9.3.1"
+  },
+  "engines": {
+    "node": ">=14.18.1"
+  }
+}

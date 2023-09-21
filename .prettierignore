@@ -1,0 +1,10 @@
+.git
+.github
+.vscode
+dist/
+node_modules
+.history
+.codecc
+.eslintcache
+.prettierignore
+pnpm-lock.yaml
