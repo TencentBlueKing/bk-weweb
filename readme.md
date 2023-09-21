@@ -31,7 +31,7 @@ $ npm install @blueking/bk-weweb
 
 ### Usage
 
-> 更多用法参考：[使用文档](https://github.com/TencentBlueKing/bk-weweb/blob/main/docs/usage.md)
+> 更多用法参考：[使用文档](https://github.com/TencentBlueKing/bk-weweb/blob/main/docs/docs/intro/hooks.md)
 
 
 **基础用法**

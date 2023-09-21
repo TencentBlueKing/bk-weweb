@@ -31,7 +31,7 @@ $ npm install @blueking/bk-weweb
 
 ### Usage
 
-> More usage reference: [Usage Documentation](/docs/docs/intro/install-and-usage.md)
+> More usage reference: [Usage Documentation](https://github.com/TencentBlueKing/bk-weweb/blob/main/docs/docs/intro/hooks.md)
 
 **Basic usage**
 
