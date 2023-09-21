@@ -25,9 +25,6 @@
  */
 /* eslint-disable max-len */
 /* eslint-disable no-prototype-builtins */
-/*
-inspired by https://github.com/umijs/qiankun
-*/
 // 正则表达式，用于匹配类定义
 const CLASS_REGEX = /^class\b/;
 

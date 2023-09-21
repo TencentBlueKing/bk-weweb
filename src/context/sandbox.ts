@@ -27,9 +27,6 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-prototype-builtins */
 import { MicroAppModel } from '../mode/app';
-/*
-inspired by https://github.com/umijs/qiankun
-*/
 import {
   BK_WEWEB_INJECT_KEY_LIST,
   BK_WEWEB_LOCATION_KEY_LIST,
