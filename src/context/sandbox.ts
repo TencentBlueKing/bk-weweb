@@ -38,6 +38,7 @@ import {
 } from '../typings';
 import { random } from '../utils/common';
 import { windowNativeFuncMap } from './cache';
+import { createRewriteDocument } from './document';
 import { rewriteDocumentAndBodyEvent } from './event';
 import bindFunctionToRawWindow from './function';
 import { rewriteWindowFunction } from './window';
@@ -57,7 +58,7 @@ export default class SandBox {
   constructor(public app: BaseModel) {
     const windowDescriptorSet = new Set<PropertyKey>();
     const rawWindow = window;
-    const rawDocument = window.document;
+    const rawDocument = createRewriteDocument(document, this.app);
     this.fakeWindow.__POWERED_BY_BK_WEWEB__ = true;
     this.fakeWindow.__BK_WEWEB_APP_KEY__ = app.appCacheKey;
     this.rawWindow = rawWindow;

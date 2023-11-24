@@ -30,7 +30,12 @@ import { setCurrentRunningApp } from './cache';
 
 const { setAttribute } = Element.prototype;
 
-const { append, appendChild: bodyAppendChild, removeChild: bodyRemoveChild } = HTMLBodyElement.prototype;
+const {
+  append,
+  appendChild: bodyAppendChild,
+  insertBefore: bodyInsertBefore,
+  removeChild: bodyRemoveChild,
+} = HTMLBodyElement.prototype;
 const {
   appendChild: headAppendChild,
   insertBefore: headInsertBefore,
@@ -72,6 +77,9 @@ export function rewriteBodyAndHeaderMethods(): void {
   HTMLHeadElement.prototype.insertBefore = function <T extends Node>(newChild: T, refChild: Node | null): T {
     return elementInsertHandler(this, newChild, refChild, headInsertBefore);
   };
+  HTMLBodyElement.prototype.insertBefore = function <T extends Node>(newChild: T, refChild: Node | null): T {
+    return elementInsertHandler(this, newChild, refChild, headInsertBefore);
+  };
   HTMLBodyElement.prototype.removeChild = function removeChildNew<T extends Node>(oldChild: T): T {
     const app = appCache.getApp(oldChild.__BK_WEWEB_APP_KEY__!);
     if (app?.container?.contains(oldChild)) {
@@ -92,6 +100,7 @@ export function resetBodyAndHeaderMethods(): void {
   HTMLBodyElement.prototype.appendChild = bodyAppendChild;
   HTMLBodyElement.prototype.append = append;
   HTMLBodyElement.prototype.removeChild = bodyRemoveChild;
+  HTMLBodyElement.prototype.insertBefore = bodyInsertBefore;
   HTMLHeadElement.prototype.appendChild = headAppendChild;
   HTMLHeadElement.prototype.insertBefore = headInsertBefore;
   HTMLHeadElement.prototype.removeChild = headRemoveChild;

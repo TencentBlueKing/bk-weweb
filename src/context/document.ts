@@ -23,6 +23,7 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
+import { type BaseModel } from '../typings';
 import { getCurrentRunningApp } from './cache';
 
 const { document } = window;
@@ -66,7 +67,6 @@ export function rewriteDocumentPrototypeMethods() {
    */
   function querySelectorNew(this: Document, selectors: string): any {
     const app = getCurrentRunningApp();
-    if (selectors.includes('data-bk-mask-uid')) debugger;
     // 如果选择器是特殊元素标签
     if (SPECIAL_ELEMENT_TAG.includes(selectors)) {
       // 如果当前应用程序容器是 ShadowRoot 类型
@@ -148,4 +148,13 @@ export function resetDocumentPrototypeMethods(): void {
   Document.prototype.getElementsByTagName = getElementsByTagName;
   Document.prototype.getElementsByName = getElementsByName;
   hasRewrite = false;
+}
+// vue3.3之后会换成document 这些需要初始化调用的app
+export function createRewriteDocument(rawDocument: Document, app: BaseModel) {
+  return Object.defineProperty(rawDocument, 'createElement', {
+    get() {
+      app?.registerRunningApp();
+      return Document.prototype.createElement;
+    },
+  });
 }
