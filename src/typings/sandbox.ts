@@ -49,6 +49,11 @@ export const BK_WEWEB_INJECT_KEY_LIST: PropertyKey[] = [
 export const WINDOW_ALIAS_LIST: PropertyKey[] = ['window', 'self', 'globalThis'];
 // 设置了scopedLocation 后需要监听属性名
 export const BK_WEWEB_LOCATION_KEY_LIST: PropertyKey[] = ['location', 'history'];
+const COMMON_MICRO_APP_WINDOE_KEY_MAP: Record<PropertyKey, true> = {
+  __bk_pop_manager: true,
+  __bk_zIndex_manager: true,
+  i18n: true,
+};
 export const DEV_MICRO_APP_WINDOE_KEY_MAP: Record<PropertyKey, true> =
   process.env.NODE_ENV !== 'production'
     ? {
@@ -59,13 +64,11 @@ export const DEV_MICRO_APP_WINDOE_KEY_MAP: Record<PropertyKey, true> =
         __VUE_I18N_FULL_INSTALL__: true,
         __VUE_I18N_LEGACY_API__: true,
         __VUE_OPTIONS_API__: true,
-        __bk_pop_manager: true,
-        __bk_zIndex_manager: true,
         '__core-js_shared__': true,
-        i18n: true,
         webpackChunkapm: true,
         webpackChunkpc: true,
         webpackChunktrace: true,
         webpackJsonp: true,
+        ...COMMON_MICRO_APP_WINDOE_KEY_MAP,
       }
-    : {};
+    : COMMON_MICRO_APP_WINDOE_KEY_MAP;
