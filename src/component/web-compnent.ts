@@ -64,6 +64,26 @@ export default class BkWewebElement extends HTMLElement {
     }
     await load(this.appProps);
   }
+  attributeChangedCallback(attr: WewebCustomAttrs, _oldVal: string, newVal: string): void {
+    if (attr !== WewebCustomAttrs.url || (this as any)[attr] === newVal || !this.connected) return;
+    this.appUrl = newVal;
+    const cacheApp = appCache.getApp(this.appKey!);
+    (this.connected || cacheApp) && this.handleAttributeChanged();
+  }
+  async connectedCallback(): Promise<void> {
+    if (this.getBooleanAttr(WewebCustomAttrs.setShodowDom) && !this.shadowRoot) {
+      this.attachShadow({ delegatesFocus: false, mode: 'open' });
+    }
+    await load(this.appProps);
+    activated(this.appKey!, this.shadowRoot ?? this);
+    this.connected = true;
+  }
+  disconnectedCallback(): void {
+    this.connected = false;
+    if (this.appProps.keepAlive) {
+      deactivated(this.appKey!);
+    } else unmount(this.appKey!);
+  }
   get appData(): Record<string, unknown> {
     if (this.hasAttribute(WewebCustomAttrs.data)) {
       try {
@@ -102,25 +122,5 @@ export default class BkWewebElement extends HTMLElement {
       showSourceCode: this.getBooleanAttr(WewebCustomAttrs.showSourceCode),
       url: this.getAttribute(WewebCustomAttrs.url)!,
     };
-  }
-  attributeChangedCallback(attr: WewebCustomAttrs, _oldVal: string, newVal: string): void {
-    if (attr !== WewebCustomAttrs.url || (this as any)[attr] === newVal || !this.connected) return;
-    this.appUrl = newVal;
-    const cacheApp = appCache.getApp(this.appKey!);
-    (this.connected || cacheApp) && this.handleAttributeChanged();
-  }
-  async connectedCallback(): Promise<void> {
-    if (this.getBooleanAttr(WewebCustomAttrs.setShodowDom) && !this.shadowRoot) {
-      this.attachShadow({ delegatesFocus: false, mode: 'open' });
-    }
-    await load(this.appProps);
-    activated(this.appKey!, this.shadowRoot ?? this);
-    this.connected = true;
-  }
-  disconnectedCallback(): void {
-    this.connected = false;
-    if (this.appProps.keepAlive) {
-      deactivated(this.appKey!);
-    } else unmount(this.appKey!);
   }
 }

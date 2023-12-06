@@ -25,7 +25,7 @@ export default defineComponent({
         scopeJs: true,
         showSourceCode: true,
         // ],
-        url: 'http://localhost:8004/index.js'
+        url: 'http://localhost:8004/index.js',
       });
       activated(id, instanceWrap.value);
     });
@@ -33,16 +33,16 @@ export default defineComponent({
       deactivated(id);
     });
     return {
-      instanceWrap
+      instanceWrap,
     };
-  }
+  },
 });
 </script>
 <style lang="scss">
-  .bk-weweb {
-    display: flex;
-    flex-direction: column;
-    width: 800px;
-    height: 800px;
-  }
+.bk-weweb {
+  display: flex;
+  flex-direction: column;
+  width: 800px;
+  height: 800px;
+}
 </style>

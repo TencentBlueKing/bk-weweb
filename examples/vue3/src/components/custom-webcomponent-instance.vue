@@ -27,7 +27,7 @@ export class InstanceElement extends HTMLElement {
       scopeJs: true,
       showSourceCode: true,
       // ],
-      url: 'http://localhost:8004/index.js' // entry js 入口js
+      url: 'http://localhost:8004/index.js', // entry js 入口js
     });
     if (this.keepAlive) activated(this.appKey!, this.shadowRoot ?? this);
     else mount(this.appKey!, this.shadowRoot ?? this);
@@ -44,9 +44,9 @@ if (!window.customElements.get('custom-instance')) {
 export default defineComponent({});
 </script>
 <style lang="scss">
-  .bk-weweb {
-    display: flex;
-    width: 800px;
-    height: 200px;
-  }
+.bk-weweb {
+  display: flex;
+  width: 800px;
+  height: 200px;
+}
 </style>

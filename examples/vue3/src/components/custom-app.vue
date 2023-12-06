@@ -1,6 +1,6 @@
 <template>
   <div class="bk-weweb">
-    <div ref="instanceWrap" />
+    <div ref="instanceWrap"></div>
   </div>
 </template>
 <script lang="ts">
@@ -14,16 +14,14 @@ export default defineComponent({
     const appKey = 'testApp';
     onMounted(async () => {
       await loadApp({
-        data: {
-
-        },
+        data: {},
         id: appKey,
         keepAlive: false,
         scopeCss: true,
         scopeLocation: true,
         setShodowDom: false,
         showSourceCode: true,
-        url: 'http://localhost:8002/'
+        url: 'http://localhost:8002/',
       });
       mount(appKey, instanceWrap.value);
     });
@@ -31,15 +29,15 @@ export default defineComponent({
       unmount(appKey);
     });
     return {
-      instanceWrap
+      instanceWrap,
     };
-  }
+  },
 });
 </script>
 <style lang="scss">
-  .bk-weweb {
-    display: flex;
-    width: 800px;
-    height: 200px;
-  }
+.bk-weweb {
+  display: flex;
+  width: 800px;
+  height: 200px;
+}
 </style>

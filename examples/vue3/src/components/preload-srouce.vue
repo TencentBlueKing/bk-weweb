@@ -10,7 +10,7 @@ import { activated, loadInstance, unmount } from '../../../../src/index';
 
 const instanceWrap = ref<HTMLElement>(null);
 const test = reactive({
-  text: 'hello world'
+  text: 'hello world',
 });
 onMounted(async () => {
   await loadInstance({
@@ -19,11 +19,11 @@ onMounted(async () => {
         click: () => {
           console.log('click');
           alert('click==========');
-        }
+        },
       },
       props: {
-        text: 'hello world'
-      }
+        text: 'hello world',
+      },
     },
     id: 'test1',
     initSource: [
@@ -34,19 +34,19 @@ onMounted(async () => {
     scopeCss: true,
     scopeJs: true,
     showSourceCode: true,
-    url: 'http://localhost:8004/index.js'
+    url: 'http://localhost:8004/index.js',
   });
   // mount('test1')
   activated<{
-    Test: any
-    Vue: any,
+    Test: any;
+    Vue: any;
   }>('test1', instanceWrap.value, (a, b) => {
     console.log(a, b);
     const div = document.createElement('div');
     instanceWrap.value.appendChild(div);
     const instance = new b.Vue({
       components: {
-        Test: b.Test
+        Test: b.Test,
       },
       el: div,
       render(h) {
@@ -56,13 +56,13 @@ onMounted(async () => {
               console.log(instance);
               instance.$children[0].text = 'sdfsdfsdfsdf';
               alert('sdfsdfsdfsdf');
-            }
+            },
           },
           props: {
-            text: test.text
-          }
+            text: test.text,
+          },
         });
-      }
+      },
     });
   });
 });

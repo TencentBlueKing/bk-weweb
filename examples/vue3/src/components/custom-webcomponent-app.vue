@@ -16,16 +16,14 @@ export class AppElement extends HTMLElement {
     }
     await loadApp({
       container: this.shadowRoot,
-      data: {
-
-      },
+      data: {},
       id: this.appKey,
       keepAlive: this.keepAlive,
       scopeCss: true,
       scopeLocation: true,
       setShodowDom: this.isShadowDom,
       showSourceCode: true,
-      url: 'https://www.google.com.hk/'
+      url: 'https://www.google.com.hk/',
     });
     activated(this.appKey!, this.shadowRoot ?? this);
   }
@@ -41,9 +39,9 @@ if (!window.customElements.get('custom-app')) {
 export default defineComponent({});
 </script>
 <style lang="scss">
-  .bk-weweb {
-    display: flex;
-    width: 800px;
-    height: 200px;
-  }
+.bk-weweb {
+  display: flex;
+  width: 800px;
+  height: 200px;
+}
 </style>

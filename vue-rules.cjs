@@ -1,4 +1,3 @@
-/* eslint-disable codecc/comment-ratio */
 /*
  * Tencent is pleased to support the open source community by making
  * 蓝鲸智云PaaS平台 (BlueKing PaaS) available.
@@ -25,9 +24,6 @@
  * IN THE SOFTWARE.
  */
 module.exports = {
-  '@typescript-eslint/explicit-member-accessibility': 'off',
-  '@typescript-eslint/indent': ['error', 2],
-  'codecc/comment-ratio': 0,
   'comma-dangle': [
     'error',
     {
@@ -35,8 +31,8 @@ module.exports = {
       exports: 'never',
       functions: 'never',
       imports: 'never',
-      objects: 'never'
-    }
+      objects: 'never',
+    },
   ],
   indent: 'off',
   'max-len': 'off',
@@ -44,8 +40,8 @@ module.exports = {
   'no-param-reassign': [
     'warn',
     {
-      props: false
-    }
+      props: false,
+    },
   ],
   'vue/array-bracket-spacing': ['error', 'never'],
   'vue/arrow-spacing': ['error', { after: true, before: true }],
@@ -57,56 +53,31 @@ module.exports = {
   'vue/comma-dangle': [
     'error',
     {
-      arrays: 'always',
+      arrays: 'always-multiline',
       exports: 'never',
       functions: 'never',
       imports: 'never',
-      objects: 'never'
-    }
+      objects: 'never',
+    },
   ],
-  'vue/comment-directive': 1,
-  'vue/component-name-in-template-casing': [
-    'error',
-    'kebab-case',
-    {
-      ignores: [],
-      registeredComponentsOnly: false
-    }
-  ],
+  'vue/comment-directive': 'off',
+  'vue/component-name-in-template-casing': 'off',
   'vue/component-tags-order': [
     'error',
     {
-      order: ['template', 'script', 'style']
-    }
+      order: ['template', 'script', 'style'],
+    },
   ],
   'vue/eqeqeq': ['error', 'always', { null: 'ignore' }],
-  'vue/html-closing-bracket-newline': [
-    'error',
-    {
-      multiline: 'always',
-      singleline: 'never'
-    }
-  ],
   'vue/html-closing-bracket-spacing': [
     'error',
     {
       endTag: 'never',
       selfClosingTag: 'always',
-      startTag: 'never'
-    }
+      startTag: 'never',
+    },
   ],
   'vue/html-end-tags': 'error',
-  'vue/html-indent': [
-    'error',
-    4,
-    {
-      alignAttributesVertically: true,
-      attribute: 1,
-      baseIndent: 1,
-      closeBracket: 0,
-      ignores: []
-    }
-  ],
   'vue/html-indent': [
     'error',
     2,
@@ -115,22 +86,10 @@ module.exports = {
       attribute: 1,
       baseIndent: 1,
       closeBracket: 0,
-      ignores: []
-    }
+      ignores: [],
+    },
   ],
   'vue/html-quotes': ['error', 'double'],
-  'vue/html-self-closing': [
-    'error',
-    {
-      html: {
-        component: 'always',
-        normal: 'always',
-        void: 'never'
-      },
-      math: 'always',
-      svg: 'always'
-    }
-  ],
   'vue/jsx-uses-vars': 1,
   'vue/key-spacing': ['error', { afterColon: true, beforeColon: false }],
   'vue/match-component-file-name': 'off',
@@ -138,12 +97,12 @@ module.exports = {
     'error',
     {
       multiline: {
-        max: 1
+        max: 1,
       },
       singleline: {
-        max: 1
-      }
-    }
+        max: 1,
+      },
+    },
   ],
   'vue/max-len': [
     'error',
@@ -160,8 +119,8 @@ module.exports = {
       ignoreTrailingComments: true,
       ignoreUrls: true,
       tabWidth: 2,
-      template: 8000
-    }
+      template: 8000,
+    },
   ],
   'vue/multi-word-component-names': 'off',
   'vue/multiline-html-element-content-newline': 'off',
@@ -210,9 +169,9 @@ module.exports = {
         'LIFECYCLE_HOOKS',
         'methods',
         ['template', 'render'],
-        'renderError'
-      ]
-    }
+        'renderError',
+      ],
+    },
   ],
   'vue/prop-name-casing': ['error', 'camelCase'],
   'vue/require-component-is': 'error',
@@ -226,53 +185,7 @@ module.exports = {
   'vue/return-in-computed-property': 'error',
   'vue/script-indent': 'off',
   'vue/script-indent': 'off',
-  'vue/singleline-html-element-content-newline': [
-    'error',
-    {
-      ignoreWhenEmpty: true,
-      ignoreWhenNoAttributes: true,
-      ignores: [
-        'a',
-        'abbr',
-        'audio',
-        'b',
-        'bdi',
-        'bdo',
-        'canvas',
-        'cite',
-        'code',
-        'data',
-        'del',
-        'dfn',
-        'em',
-        'i',
-        'iframe',
-        'ins',
-        'kbd',
-        'label',
-        'map',
-        'mark',
-        'noscript',
-        'object',
-        'output',
-        'picture',
-        'q',
-        'ruby',
-        's',
-        'samp',
-        'small',
-        'span',
-        'strong',
-        'sub',
-        'sup',
-        'svg',
-        'time',
-        'u',
-        'var',
-        'video'
-      ]
-    }
-  ],
+  'vue/singleline-html-element-content-newline': 'off',
   'vue/space-infix-ops': 'error',
   'vue/space-unary-ops': ['error', { nonwords: false, words: true }],
   'vue/this-in-template': ['error', 'never'],
@@ -293,5 +206,5 @@ module.exports = {
   'vue/valid-v-once': 'error',
   'vue/valid-v-pre': 'error',
   'vue/valid-v-show': 'error',
-  'vue/valid-v-text': 'error'
+  'vue/valid-v-text': 'error',
 };

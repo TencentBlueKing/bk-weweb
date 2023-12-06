@@ -76,9 +76,6 @@ export class AppCache {
     });
     return style;
   }
-  get hasActiveApp() {
-    return Array.from(this.cache.values()).some((app: BaseModel) => app.status !== AppState.UNMOUNT);
-  }
   setApp(app: BaseModel) {
     this.cache.set(app.appCacheKey, app);
   }
@@ -87,6 +84,9 @@ export class AppCache {
   }
   setBaseAppStyle(url: string, style: Style) {
     this.baseSource.setStyle(url, style);
+  }
+  get hasActiveApp() {
+    return Array.from(this.cache.values()).some((app: BaseModel) => app.status !== AppState.UNMOUNT);
   }
 }
 const appCache = new AppCache();
