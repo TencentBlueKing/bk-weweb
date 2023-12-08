@@ -87,9 +87,6 @@ export class MicroAppModel implements BaseModel {
       callback?.(this);
     }
   }
-  get appCacheKey(): string {
-    return this.url;
-  }
   createIframe(): Promise<HTMLIFrameElement> {
     return new Promise(resolve => {
       const iframe = document.createElement('iframe');
@@ -163,18 +160,21 @@ export class MicroAppModel implements BaseModel {
       await this.source.importEntery(this);
     }
   }
-  public get status() {
-    return this.state;
-  }
-  public set status(v: AppState) {
-    this.state = v;
-  }
   unmount(needDestroy = false): void {
     this.state = AppState.UNMOUNT;
     this.sandBox?.deactivated();
     needDestroy && appCache.deleteApp(this.url);
     this.container!.innerHTML = '';
     this.container = undefined;
+  }
+  get appCacheKey(): string {
+    return this.url;
+  }
+  public get status() {
+    return this.state;
+  }
+  public set status(v: AppState) {
+    this.state = v;
   }
 }
 export const createApp = (props: IAppModleProps) => {

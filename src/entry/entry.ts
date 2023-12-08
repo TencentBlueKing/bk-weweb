@@ -104,11 +104,11 @@ export class EntrySource {
     ) {
       return;
     }
-    let replaceElement = null;
+    let replaceElement: Comment | null = null;
     if (script.hasAttribute('exclude')) {
       replaceElement = document.createComment('【bk-weweb】script element with exclude attribute is removed');
-      !needReplaceELement && parent.replaceChild(replaceElement, script);
-      return { replace: replaceElement };
+      !needReplaceELement && parent.replaceChild(replaceElement!, script);
+      return { replace: replaceElement! };
     }
     let src: null | string = script.getAttribute('src');
     if (src) {

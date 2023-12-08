@@ -25,7 +25,6 @@
  */
 import { appCache } from '../cache/app-cache';
 import { AppState } from '../common';
-import { resetDocumentPrototypeMethods } from '../context/document';
 import { resetBodyAndHeaderMethods } from '../context/element';
 
 export function deactivated(appKey: string) {
@@ -35,6 +34,5 @@ export function deactivated(appKey: string) {
   }
   if (!appCache.hasActiveApp) {
     resetBodyAndHeaderMethods();
-    resetDocumentPrototypeMethods();
   }
 }

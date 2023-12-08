@@ -38,7 +38,7 @@ import {
 } from '../typings';
 import { random } from '../utils/common';
 import { windowNativeFuncMap } from './cache';
-import { createRewriteDocument } from './document';
+import { createProxyDocument } from './document';
 import { rewriteDocumentAndBodyEvent } from './event';
 import bindFunctionToRawWindow from './function';
 import { rewriteWindowFunction } from './window';
@@ -51,20 +51,21 @@ export default class SandBox {
   private sameRawWindowKeySet = new Set<PropertyKey>();
 
   public fakeWindow: Window & IInjectWindowAttrs = {} as any;
+  public proxyDocument: any;
   public proxyWindow: WindowProxy & IInjectWindowAttrs;
-  public rawDocument: Document;
+  public rawDocument: Record<string, any>;
   public rawWindow: Window;
   public windowSymbolKey: keyof Window;
   constructor(public app: BaseModel) {
     const windowDescriptorSet = new Set<PropertyKey>();
     const rawWindow = window;
-    const rawDocument = createRewriteDocument(document, this.app);
+    // const rawDocument = createProxyDocument(document, app);
     this.fakeWindow.__POWERED_BY_BK_WEWEB__ = true;
     this.fakeWindow.__BK_WEWEB_APP_KEY__ = app.appCacheKey;
     this.rawWindow = rawWindow;
-    this.rawDocument = rawDocument;
+    this.rawDocument = createProxyDocument(document, app);
     this.fakeWindow.rawWindow = rawWindow;
-    this.fakeWindow.rawDocument = rawDocument;
+    this.fakeWindow.rawDocument = document;
     const { resetWindowFunction } = rewriteWindowFunction(this.fakeWindow);
     this.resetWindowFunction = resetWindowFunction;
     this.windowSymbolKey = `__${(app.name || app.appCacheKey).replace(/(-|,|:|~|'|")/gim, '_')}_${random(
@@ -92,7 +93,7 @@ export default class SandBox {
         if (WINDOW_ALIAS_LIST.includes(key as string)) return this.proxyWindow;
         if (key === 'document') {
           app.registerRunningApp();
-          return rawDocument;
+          return this.rawDocument;
         }
         if (key === 'eval') {
           app.registerRunningApp();
@@ -114,6 +115,14 @@ export default class SandBox {
             return this.proxyWindow;
           }
           return Reflect.get(rawWindow, key); // iframe
+        }
+        if (key === 'getComputedStyle') {
+          return (element: Element, pseudoElt?: null | string) => {
+            if (element instanceof Element) {
+              return rawWindow.getComputedStyle(element, pseudoElt);
+            }
+            return rawWindow.getComputedStyle(document.body, pseudoElt);
+          };
         }
         if (Reflect.has(target, key) || BK_WEWEB_INJECT_KEY_LIST.includes(key)) return Reflect.get(target, key);
         const rawValue = Reflect.get(rawWindow, key);
@@ -196,6 +205,7 @@ export default class SandBox {
   activeated(data?: Record<string, unknown>): void {
     if (!this.active) {
       this.active = true;
+      this.rawDocument = createProxyDocument(document, this.app);
       this.fakeWindow.__BK_WEWEB_DATA__ = data ?? {};
       const { resetDocumentAndBodyEvent } = rewriteDocumentAndBodyEvent();
       this.resetDocumentAndBodyEvent = resetDocumentAndBodyEvent;
