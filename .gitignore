@@ -18,4 +18,3 @@ logs
 *.log
 # eslint
 .eslintcache
-.vscode
