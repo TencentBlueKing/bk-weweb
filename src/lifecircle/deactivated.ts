@@ -26,7 +26,7 @@
 import { appCache } from '../cache/app-cache';
 import { AppState } from '../common';
 import { resetBodyAndHeaderMethods } from '../context/element';
-
+// deactivated
 export function deactivated(appKey: string) {
   const app = appCache.getApp(appKey);
   if (app && [AppState.ACTIVATED, AppState.MOUNTED].includes(app.status)) {

@@ -32,15 +32,15 @@ import { unmount } from '../lifecircle/unmount';
 import { IAppModleProps, IJsModelProps, WewebMode } from '../typings';
 // bk-weweb支持的属性配置
 export enum WewebCustomAttrs {
-  data = 'data',
-  id = 'id',
-  keepAlive = 'keepAlive',
-  mode = 'mode',
-  scopeCss = 'scopeCss',
-  scopeJs = 'scopeJs',
-  scopeLocation = 'scopeLocation',
-  setShodowDom = 'setShodowDom',
-  showSourceCode = 'showSourceCode',
+  data = 'data', // 传递给子应用的数据
+  id = 'id', // 应用id
+  keepAlive = 'keepAlive', // 是否缓存
+  mode = 'mode', // 模式
+  scopeCss = 'scopeCss', // 是否开启css隔离
+  scopeJs = 'scopeJs', // 是否开启js隔离
+  scopeLocation = 'scopeLocation', // 是否开启location隔离
+  setShodowDom = 'setShodowDom', // 是否开启shadowDom
+  showSourceCode = 'showSourceCode', // 是否显示源码
   url = 'url',
 }
 export default class BkWewebElement extends HTMLElement {

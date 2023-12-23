@@ -34,23 +34,24 @@ import { addUrlProtocol, random } from '../utils/common';
 import { SourceType } from '../utils/load-source';
 
 const BLANK_ORIGN = 'about:blank';
+// bk-weweb 微应用模式
 export class MicroAppModel implements BaseModel {
-  private state: AppState = AppState.UNSET;
-  container?: HTMLElement | ShadowRoot;
-  public data: Record<string, unknown>;
-  iframe: HTMLIFrameElement | null = null;
-  initSource: SourceType;
-  public isPreLoad = false;
-  keepAlive: boolean;
+  private state: AppState = AppState.UNSET; // 状态
+  container?: HTMLElement | ShadowRoot; // 容器
+  public data: Record<string, unknown>; // 数据
+  iframe: HTMLIFrameElement | null = null; // scoped iframe
+  initSource: SourceType; // 初始资源
+  public isPreLoad = false; // 是否预加载
+  keepAlive: boolean; // 是否缓存
   mode: WewebMode = WewebMode.APP;
-  name: string;
-  sandBox?: SandBox;
-  scopeCss: boolean;
-  scopeJs: boolean;
-  scopeLocation: boolean;
-  showSourceCode: boolean;
-  source?: EntrySource;
-  url: string;
+  name: string; // 名称
+  sandBox?: SandBox; // 沙箱
+  scopeCss: boolean; // 是否隔离样式
+  scopeJs: boolean; // 是否隔离js
+  scopeLocation: boolean; // 是否隔离location
+  showSourceCode: boolean; // 是否显示源码
+  source?: EntrySource; // 入口资源
+  url: string; // url
   constructor(props: IAppModleProps) {
     this.name = props.id !== props.url ? props.id! : random(5);
     this.mode = props.mode ?? WewebMode.APP;
@@ -71,6 +72,7 @@ export class MicroAppModel implements BaseModel {
       this.container.setAttribute(CSS_ATTRIBUTE_KEY, this.name);
     }
   }
+  // 激活
   activated(container: HTMLElement | ShadowRoot, callback?: (app: BaseModel) => void) {
     this.isPreLoad = false;
     this.state = AppState.ACTIVATED;
@@ -87,6 +89,7 @@ export class MicroAppModel implements BaseModel {
       callback?.(this);
     }
   }
+  // 创建隔离iframe
   createIframe(): Promise<HTMLIFrameElement> {
     return new Promise(resolve => {
       const iframe = document.createElement('iframe');

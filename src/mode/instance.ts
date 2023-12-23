@@ -33,22 +33,22 @@ import { excuteAppStyles } from '../entry/style';
 import { BaseModel, CSS_ATTRIBUTE_KEY, IJsModelProps } from '../typings';
 import { random } from '../utils/common';
 import { SourceType } from '../utils/load-source';
-
+// bk-kweweb 微模块模式
 export class MicroInstanceModel implements BaseModel {
-  private state: AppState = AppState.UNSET;
-  appCacheKey: string;
-  container?: HTMLElement | ShadowRoot;
-  data: Record<string, unknown>;
-  initSource: SourceType;
-  isPreLoad = false;
-  keepAlive: boolean;
-  name: string;
-  sandBox?: SandBox;
-  scopeCss = true;
-  scopeJs = false;
-  showSourceCode = true;
-  source?: EntrySource;
-  url: string;
+  private state: AppState = AppState.UNSET; // 当前实例状态
+  appCacheKey: string; // 缓存key
+  container?: HTMLElement | ShadowRoot; // 容器
+  data: Record<string, unknown>; // 数据
+  initSource: SourceType; // 初始资源
+  isPreLoad = false; // 是否预加载
+  keepAlive: boolean; // 是否缓存
+  name: string; // 名称
+  sandBox?: SandBox; // 沙箱
+  scopeCss = true; // 是否隔离样式
+  scopeJs = false; // 是否隔离js
+  showSourceCode = true; // 是否显示源码
+  source?: EntrySource; // 入口资源
+  url: string; // url
   constructor(props: IJsModelProps) {
     this.name = props.id !== props.url ? props.id! : random(5);
     this.appCacheKey = props.id || this.name;
@@ -134,17 +134,17 @@ export class MicroInstanceModel implements BaseModel {
       await this.source.importEntery(this);
     }
   }
-  set status(v: AppState) {
-    this.state = v;
-  }
-  get status(): AppState {
-    return this.state;
-  }
   unmount(needDestroy?: boolean): void {
     this.state = AppState.UNMOUNT;
     this.sandBox?.deactivated();
     needDestroy && appCache.deleteApp(this.url);
     this.container!.innerHTML = '';
     this.container = undefined;
+  }
+  set status(v: AppState) {
+    this.state = v;
+  }
+  get status(): AppState {
+    return this.state;
   }
 }

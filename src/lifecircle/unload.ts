@@ -24,7 +24,7 @@
  * IN THE SOFTWARE.
  */
 import { appCache } from '../cache/app-cache';
-
+// unload
 export function unload(url: string) {
   appCache.deleteApp(url);
 }

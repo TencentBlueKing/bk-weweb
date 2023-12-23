@@ -50,6 +50,11 @@ export class Style {
     this.fromHtml = fromHtml;
     this.initial = initial ?? false;
   }
+  /**
+   * @param templateStyle 模板样式
+   * @param styleElement 样式node
+   * @param app 应用实例
+   */
   commonScoped(templateStyle: HTMLStyleElement, styleElement: HTMLStyleElement, app: BaseModel) {
     if (app.scopeCss && !(app.container instanceof ShadowRoot)) {
       const rules: CSSRule[] = Array.from(templateStyle.sheet?.cssRules ?? []);
@@ -84,6 +89,10 @@ export class Style {
     if (styleElement.__BK_WEWEB_APP_KEY__) delete styleElement.__BK_WEWEB_APP_KEY__;
     return styleElement;
   }
+  /**
+   * @param app 应用实例
+   * @returns 返回执行后的style标签
+   */
   async excuteCode(app: BaseModel): Promise<HTMLStyleElement> {
     app.registerRunningApp();
     let styleElement = this.createStyleElement();

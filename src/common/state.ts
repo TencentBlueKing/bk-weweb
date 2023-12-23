@@ -25,13 +25,13 @@
  */
 // app status
 export enum AppState {
-  ACTIVATED = 'ACTIVATED',
-  DEACTIVATED = 'DEACTIVATED',
-  ERROR = 'ERROR',
-  LOADED = 'LOADED',
-  LOADING = 'LOADING',
-  MOUNTED = 'MOUNTED',
-  MOUNTING = 'MOUNTING',
-  UNMOUNT = 'UNMOUNT',
-  UNSET = 'UNSET',
+  ACTIVATED = 'ACTIVATED', // 激活
+  DEACTIVATED = 'DEACTIVATED', // 未激活
+  ERROR = 'ERROR', // Error
+  LOADED = 'LOADED', // 加载完成
+  LOADING = 'LOADING', // 加载中
+  MOUNTED = 'MOUNTED', // 挂载完成
+  MOUNTING = 'MOUNTING', // 挂载中
+  UNMOUNT = 'UNMOUNT', // 卸载
+  UNSET = 'UNSET', // 未设置
 }

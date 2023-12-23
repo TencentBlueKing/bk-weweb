@@ -24,7 +24,7 @@
  * IN THE SOFTWARE.
  */
 import { rewriteBodyAndHeaderMethods } from '../context/element';
-
+// before load
 export function beforeLoad() {
   rewriteBodyAndHeaderMethods();
 }

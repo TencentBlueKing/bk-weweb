@@ -24,7 +24,7 @@
  * IN THE SOFTWARE.
  */
 import { BaseModel } from '../typings';
-
+// 当前正在运行的app
 let currentRunningApp: BaseModel | null = null;
 export function getCurrentRunningApp() {
   return currentRunningApp;
@@ -32,7 +32,6 @@ export function getCurrentRunningApp() {
 export function setCurrentRunningApp(appInstance: BaseModel | null) {
   currentRunningApp = appInstance;
 }
-
 export const SCOPED_CSS_STYLE_ID = 'SCOPED_CSS_STYLE_ID';
 
 const templateStyle: HTMLStyleElement = document.createElement('style');

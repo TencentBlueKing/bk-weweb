@@ -26,7 +26,7 @@
 import { appCache } from '../cache/app-cache';
 import { AppState } from '../common';
 import { resetBodyAndHeaderMethods } from '../context/element';
-
+// unmount
 export function unmount(appKey: string) {
   const app = appCache.getApp(appKey);
   if (app && app.status !== AppState.UNMOUNT) {

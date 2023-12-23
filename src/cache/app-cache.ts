@@ -36,17 +36,19 @@ export class AppCache {
   constructor() {
     this.cache = new Map();
     this.baseSource = new EntrySource(location.href);
-    // this.baseApp = new
   }
+  // 删除缓存
   deleteApp(url: string) {
     this.cache.delete(url);
   }
+  // 获取缓存app
   getApp(name?: null | string): BaseModel | undefined {
     if (!name) return undefined;
     const app = this.cache.get(name);
     if (app) return app;
     return Array.from(this.cache.values()).find((item: BaseModel) => item.name === name);
   }
+  // 获取缓存app
   getBaseAppStyle(urlOrCode: string) {
     return this.baseSource.getStyle(urlOrCode);
   }

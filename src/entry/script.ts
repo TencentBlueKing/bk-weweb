@@ -59,6 +59,11 @@ export class Script {
     this.fromHtml = fromHtml ?? false;
     this.initial = initial ?? false;
   }
+  /**
+   * @param app 应用
+   * @param needRelaceScriptElement 是否需要替换script标签
+   * @returns 返回执行后的script标签或注释
+   */
   async excuteCode(app: BaseModel, needRelaceScriptElement = false): Promise<Comment | HTMLScriptElement | undefined> {
     try {
       if (!this.code) await this.getCode(app);
@@ -98,6 +103,7 @@ export class Script {
     }
     return;
   }
+  // 内存脚本执行
   executeMemoryScript(app: BaseModel, scopedCode: string) {
     try {
       const isScopedLocation = app instanceof MicroAppModel && app.scopeLocation;
@@ -112,6 +118,7 @@ export class Script {
       console.error(e);
     }
   }
+  // 脚本标签执行
   executeSourceScript(scriptElement: HTMLScriptElement, scopedCode: string): void {
     if (this.isModule) {
       if (this.url?.match(/\.ts$/)) {
@@ -126,6 +133,7 @@ export class Script {
     }
     this.url && scriptElement.setAttribute('origin-src', this.url);
   }
+  // 获取脚本内容
   async getCode(app?: BaseModel): Promise<string> {
     if (this.code.length || !this.url) {
       return this.code;
@@ -149,6 +157,7 @@ export class Script {
   setCode(code: string) {
     this.code = code;
   }
+  // 转换脚本内容
   transformCode(app: BaseModel): string {
     if (app.sandBox) {
       if (app.showSourceCode || this.isModule) {

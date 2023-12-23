@@ -27,7 +27,7 @@ import { appCache } from '../cache/app-cache';
 import { BaseModel } from '../typings';
 import { nextTask } from '../utils/common';
 import { beforeLoad } from './before-load';
-
+// mount
 export function mount<T>(
   appKey: string,
   container?: HTMLElement | ShadowRoot,

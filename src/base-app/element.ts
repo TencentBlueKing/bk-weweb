@@ -30,7 +30,12 @@ import { setMarkElement } from '../utils';
 import { fillUpPath } from '../utils/common';
 import { dispatchLinkOrScriptError, dispatchLinkOrScriptLoad } from '../utils/custom';
 import { fetchSource } from '../utils/fetch';
-
+/**
+ * @param url 资源地址
+ * @param style 样式实例
+ * @param originLink 原始link标签
+ * @returns 返回替换的style标签
+ */
 function getStyleSource(url: string, style: Style, originLink: HTMLLinkElement): HTMLStyleElement {
   const replaceStyle = document.createElement('style');
   setMarkElement(replaceStyle);
@@ -47,6 +52,12 @@ function getStyleSource(url: string, style: Style, originLink: HTMLLinkElement):
     });
   return replaceStyle;
 }
+/**
+ * @param url 资源地址
+ * @param script 脚本实例
+ * @param originScript 原始script标签
+ * @returns 返回替换的script标签
+ */
 function getScriptSource(url: string, script: Script, originScript: HTMLScriptElement): Comment | HTMLScriptElement {
   const replaceScript: HTMLScriptElement = document.createElement('script');
   setMarkElement(replaceScript);
@@ -69,6 +80,10 @@ function getScriptSource(url: string, script: Script, originScript: HTMLScriptEl
     });
   return replaceScript;
 }
+/**
+ * @param child link或者script标签
+ * @returns 返回替换的link或者script标签
+ */
 function createNewNode(child: Node): Node {
   if (child instanceof HTMLLinkElement) {
     const rel = child.getAttribute('rel');
@@ -103,9 +118,20 @@ function createNewNode(child: Node): Node {
   }
   return child;
 }
+/**
+ * @param node 节点
+ * @returns 返回是否是link或者script标签
+ */
 function isLinkOrScript(node: Node) {
   return node instanceof HTMLLinkElement || node instanceof HTMLScriptElement;
 }
+/**
+ * @param parent 父节点
+ * @param newChild 新节点
+ * @param passiveChild 被动节点
+ * @param rawMethod 原始方法
+ * @returns 返回原始方法的执行结果
+ */
 export function baseElementInertHandle(parent: Node, newChild: Node, passiveChild: Node | null, rawMethod: Function) {
   if (isLinkOrScript(newChild)) {
     const targetChild = createNewNode(newChild);
@@ -113,6 +139,12 @@ export function baseElementInertHandle(parent: Node, newChild: Node, passiveChil
   }
   return rawMethod.call(parent, newChild, passiveChild);
 }
+/**
+ * @param parent 父节点
+ * @param newChild 新节点
+ * @param rawMethod 原始方法
+ * @returns 返回原始方法的执行结果
+ */
 export function baseElementAppendHandle(parent: Node, newChild: Node, rawMethod: Function) {
   if (isLinkOrScript(newChild)) {
     const targetChild = createNewNode(newChild);

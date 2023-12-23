@@ -27,7 +27,9 @@ import { appCache } from '../cache/app-cache';
 import { Style } from '../entry/style';
 import { randomUrl } from '../utils';
 import { baseElementAppendHandle, baseElementInertHandle } from './element';
-
+/**
+ * 收集主应用的资源
+ */
 export function collectBaseSource() {
   const rawBodyAppendChild = HTMLBodyElement.prototype.appendChild;
   const rawHeadAppendChild = HTMLHeadElement.prototype.appendChild;
