@@ -227,15 +227,17 @@ export function noteGlobalProps(global: Window) {
 }
 // app初始化dom 脚本执行
 export async function execAppScripts(app: BaseModel) {
-  const appInitialScriptList = Array.from(app.source!.scripts.values()).filter(script => script.initial);
-  // 初始化脚本最先执行
-  if (appInitialScriptList.length) {
-    await Promise.all(appInitialScriptList.map(script => script.excuteCode(app)));
-  }
-  const appScriptList = Array.from(app.source!.scripts.values()).filter(script => script.fromHtml && !script.initial);
+  // const appInitialScriptList = Array.from(app.source!.scripts.values()).filter(script => script.initial);
+  // // 初始化脚本最先执行
+  // if (appInitialScriptList.length) {
+  //   await Promise.all(appInitialScriptList.map(script => script.excuteCode(app)));
+  // }
+  const appScriptList = Array.from(app.source!.scripts.values()).filter(script => script.fromHtml);
   const commomList = appScriptList.filter(script => (!script.async && !script.defer) || script.isModule);
   // 保证同步脚本 和 module类型 最先执行
+  await Promise.all(commomList.map(script => script.getCode(app)));
   await Promise.all(commomList.map(script => script.excuteCode(app)));
+
   // 最后执行 defer 和 async 脚本
   const deferScriptList: Promise<Comment | HTMLScriptElement | undefined>[] = [];
   const asyncScriptList: Promise<Comment | HTMLScriptElement | undefined>[] = [];

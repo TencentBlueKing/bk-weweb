@@ -33,12 +33,6 @@ export function setCurrentRunningApp(appInstance: BaseModel | null) {
   currentRunningApp = appInstance;
 }
 export const SCOPED_CSS_STYLE_ID = 'SCOPED_CSS_STYLE_ID';
-
-const templateStyle: HTMLStyleElement = document.createElement('style');
-templateStyle.setAttribute('id', SCOPED_CSS_STYLE_ID);
-document.body.appendChild(templateStyle);
-templateStyle.sheet!.disabled = true;
-export const disabledStyleDom = templateStyle;
 export const windowNativeFuncMap = new Map<PropertyKey, true>();
 /**
  * 收集原生window方法

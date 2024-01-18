@@ -25,7 +25,7 @@
  */
 /* eslint-disable no-param-reassign */
 import { appCache } from '../cache/app-cache';
-import { disabledStyleDom } from '../context/cache';
+// import { disabledStyleDom } from '../context/cache';
 import { BaseModel, CssRuleEnum, IStyleOption } from '../typings';
 import { setMarkElement } from '../utils';
 import { addUrlProtocol, fillUpPath } from '../utils/common';
@@ -51,20 +51,21 @@ export class Style {
     this.initial = initial ?? false;
   }
   /**
-   * @param templateStyle 模板样式
    * @param styleElement 样式node
    * @param app 应用实例
    */
-  commonScoped(templateStyle: HTMLStyleElement, styleElement: HTMLStyleElement, app: BaseModel) {
+  commonScoped(styleElement: HTMLStyleElement, app: BaseModel) {
     if (app.scopeCss && !(app.container instanceof ShadowRoot)) {
-      const rules: CSSRule[] = Array.from(templateStyle.sheet?.cssRules ?? []);
+      const cssStyleSheet = new CSSStyleSheet({ disabled: true });
+      (cssStyleSheet as any).replaceSync(styleElement.textContent || this.code);
+      const rules: CSSRule[] = Array.from(cssStyleSheet?.cssRules ?? []);
       const cssPrefix = `#${app.name}`;
       const scopedCss = this.scopeRule(rules, cssPrefix);
       const cssText = this.resetUrlHost(scopedCss, app.url, this.url);
       styleElement.textContent = cssText;
       this.scopedCode = cssText;
     } else {
-      const cssText = this.resetUrlHost(styleElement.textContent || templateStyle.textContent || '', app.url, this.url);
+      const cssText = this.resetUrlHost(styleElement.textContent || this.code || '', app.url, this.url);
       // fix https://bugs.chromium.org/p/chromium/issues/detail?id=336876
       if (cssText && app.container instanceof ShadowRoot) {
         let fontContent = '';
@@ -204,11 +205,9 @@ export class Style {
     const container = needKeepAlive ? document.head : app.container;
     try {
       if (this.code) {
-        disabledStyleDom.textContent = styleElement.textContent || this.code;
-        this.commonScoped(disabledStyleDom, styleElement, app);
+        this.commonScoped(styleElement, app);
         container?.prepend(styleElement);
         linkElement && dispatchLinkOrScriptLoad(linkElement);
-        disabledStyleDom.textContent = '';
       } else if (linkElement.getAttribute('href')) {
         this.url = fillUpPath(linkElement.getAttribute('href')!, app.url);
         this.getCode(app).then(() => {
@@ -247,15 +246,13 @@ export class Style {
         styleElement.innerHTML = '';
       }
       if (this.linkedBaseStyle(styleElement, app)) return styleElement;
-      disabledStyleDom.textContent = this.code;
-      this.commonScoped(disabledStyleDom, styleElement, app);
-      disabledStyleDom.textContent = '';
+      this.commonScoped(styleElement, app);
     } else {
       const observer = new MutationObserver(() => {
         if (!(styleElement.textContent || styleElement.sheet?.cssRules?.length)) return;
         observer.disconnect();
         if (!this.linkedBaseStyle(styleElement, app)) {
-          this.commonScoped(styleElement, styleElement, app);
+          this.commonScoped(styleElement, app);
         }
       });
       observer.observe(styleElement, { attributes: false, characterData: true, childList: true, subtree: true });

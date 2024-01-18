@@ -101,7 +101,11 @@ export const createProxyDocument = (rawDocument: Document, app: BaseModel): Reco
       return rawDocument.querySelector.call(this, selectors);
     }
     // 返回当前应用程序容器中匹配选择器的元素，如果没有匹配的元素则返回 null
-    return app?.container?.querySelector(selectors) ?? null;
+    try {
+      return app?.container?.querySelector(selectors) ?? null;
+    } catch {
+      return null;
+    }
   }
   /**
    * 重写了 Document 类的 querySelectorAll 方法
@@ -127,7 +131,7 @@ export const createProxyDocument = (rawDocument: Document, app: BaseModel): Reco
   }
   function getElementsByTagName<K extends keyof HTMLElementTagNameMap>(key: K): HTMLCollectionOf<Element> {
     if (SPECIAL_ELEMENT_TAG.includes(key) || (!app?.showSourceCode && key.toLocaleLowerCase() === 'script')) {
-      return rawDocument.getElementsByName(key) as any;
+      return rawDocument.getElementsByTagName(key) as any;
     }
     return querySelectorAllNew(key);
   }

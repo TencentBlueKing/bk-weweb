@@ -50,7 +50,9 @@ export default class BkWewebElement extends HTMLElement {
     return [WewebCustomAttrs.url];
   }
   private getBooleanAttr(name: string): boolean | undefined {
-    return this.hasAttribute(name) ? this.getAttribute(name) !== 'false' : undefined;
+    return this.hasAttribute(name) || this.hasAttribute(name.replace(/([A-Z])/g, `-$1`).toLocaleLowerCase())
+      ? this.getAttribute(name) !== 'false'
+      : undefined;
   }
   private async handleAttributeChanged(): Promise<void> {
     if (!this.appKey) return;

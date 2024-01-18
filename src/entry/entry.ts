@@ -133,9 +133,11 @@ export class EntrySource {
       const nonceStr: string = randomUrl();
       const scriptInstance = new Script({
         async: false,
+        // code: script.textContent.replace(/var\s+(\w+)=/gm, `window.$1 = `),
         code: script.textContent,
         defer: script.type === 'module',
         fromHtml: !needReplaceELement,
+        initial: true,
         isModule: script.type === 'module',
         url: nonceStr!,
       });
@@ -149,35 +151,67 @@ export class EntrySource {
     }
     return { replace: script };
   }
-  collectScriptAndStyle(parent: HTMLElement, app: MicroAppModel): void {
-    const children = Array.from(parent.children);
-    children.length &&
-      children.forEach(child => {
-        this.collectScriptAndStyle(child as HTMLElement, app);
-      });
-    children?.forEach(dom => {
-      if (dom instanceof HTMLLinkElement) {
-        this.collectLink(dom, parent);
-      } else if (dom instanceof HTMLStyleElement) {
-        if (!dom.hasAttribute('exclude') && !dom.hasAttribute('ignore')) {
-          this.styles.set(
-            randomUrl(),
-            new Style({
-              code: dom.textContent || '',
-              fromHtml: true,
-              url: '',
-            }),
-          );
-          dom.remove();
-        }
-      } else if (dom instanceof HTMLScriptElement) {
-        this.collectScript(dom, parent);
-      } else if (dom instanceof HTMLMetaElement || dom instanceof HTMLTitleElement) {
-        parent.removeChild(dom);
-      } else if (dom instanceof HTMLImageElement && dom.hasAttribute('src')) {
-        dom.setAttribute('src', fillUpPath(dom.getAttribute('src')!, this.url));
+  collectScriptAndStyle(parent: HTMLElement): void {
+    const links = Array.from(parent.querySelectorAll('link'));
+    links?.forEach(link => {
+      this.collectLink(link, link.parentElement!);
+    });
+    const styles = Array.from(parent.querySelectorAll('style'));
+    styles?.forEach(style => {
+      if (!style.hasAttribute('exclude') && !style.hasAttribute('ignore')) {
+        this.styles.set(
+          randomUrl(),
+          new Style({
+            code: style.textContent || '',
+            fromHtml: true,
+            url: '',
+          }),
+        );
+        style.remove();
       }
     });
+    const scripts = Array.from(parent.querySelectorAll('script'));
+    scripts?.forEach(script => {
+      this.collectScript(script, script.parentElement!);
+    });
+    const metas = Array.from(parent.querySelectorAll('meta'));
+    metas?.forEach(meta => {
+      meta.parentElement!.removeChild(meta);
+    });
+    const imgs = Array.from(parent.querySelectorAll('img'));
+    imgs?.forEach(img => {
+      if (img.hasAttribute('src')) {
+        img.setAttribute('src', fillUpPath(img.getAttribute('src')!, this.url));
+      }
+    });
+    // const children = Array.from(parent.children);
+    // children?.forEach(dom => {
+    //   if (dom instanceof HTMLLinkElement) {
+    //     this.collectLink(dom, parent);
+    //   } else if (dom instanceof HTMLStyleElement) {
+    //     if (!dom.hasAttribute('exclude') && !dom.hasAttribute('ignore')) {
+    //       this.styles.set(
+    //         randomUrl(),
+    //         new Style({
+    //           code: dom.textContent || '',
+    //           fromHtml: true,
+    //           url: '',
+    //         }),
+    //       );
+    //       dom.remove();
+    //     }
+    //   } else if (dom instanceof HTMLScriptElement) {
+    //     this.collectScript(dom, parent);
+    //   } else if (dom instanceof HTMLMetaElement || dom instanceof HTMLTitleElement) {
+    //     parent.removeChild(dom);
+    //   } else if (dom instanceof HTMLImageElement && dom.hasAttribute('src')) {
+    //     dom.setAttribute('src', fillUpPath(dom.getAttribute('src')!, this.url));
+    //   }
+    // });
+    // children.length &&
+    //   children.forEach(child => {
+    //     this.collectScriptAndStyle(child as HTMLElement, app);
+    //   });
   }
   getScript(url: string) {
     return this.scripts.get(url);
@@ -212,7 +246,7 @@ export class EntrySource {
     const wrapElement = document.createElement('div');
     if (wrapElement.__BK_WEWEB_APP_KEY__) delete wrapElement.__BK_WEWEB_APP_KEY__;
     wrapElement.innerHTML = htmlStr.replace(/<\/?head>/gim, '').replace(/<\/?body>/i, '');
-    this.collectScriptAndStyle(wrapElement, app);
+    this.collectScriptAndStyle(wrapElement);
     await excuteAppStyles(app, wrapElement);
     this.html = wrapElement;
   }

@@ -18,3 +18,6 @@ logs
 *.log
 # eslint
 .eslintcache
+
+pre-*-bkcodeai
+.vscode

@@ -1,5 +1,22 @@
 {
   "eslint.experimental.useFlatConfig": true,
   "eslint.enable": true,
-  "eslint.format.enable": true
+  "eslint.format.enable": true,
+  "preCI.localCodeCheck.filter.whitePath": "",
+  "preCI.localCodeCheck.filter.skipPath": ".*/\\.codecc/.*,.*/\\.git,.*/\\.git/.*,.*/\\.svn/.*,.*/node_modules/.*",
+  "preCI.localCodeCheck.preCommit": "none",
+  "preCI.localCodeCheck.prePush": "none",
+  "preCI.pipeline.yamlFilePath": "build.yml",
+  "preCI.localCodeCheck.toolType": "binary",
+  "preCI.localCodeCheck.checkerSet.Other": [
+    "standard_scc",
+    "tod_sensitive_other",
+    "opensource_sensitive_other"
+  ],
+  "preCI.localCodeCheck.checkerSet.JS": [
+    "standard_js"
+  ],
+  "preCI.localCodeCheck.checkerSet.TS": [
+    "ts_standard"
+  ]
 }

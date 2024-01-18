@@ -50,7 +50,7 @@ export default class SandBox {
   private resetWindowFunction: CallableFunction;
   private sameRawWindowKeySet = new Set<PropertyKey>();
 
-  public fakeWindow: Window & IInjectWindowAttrs = {} as any;
+  public fakeWindow: Window & IInjectWindowAttrs;
   public proxyDocument: any;
   public proxyWindow: WindowProxy & IInjectWindowAttrs;
   public rawDocument: Record<string, any>;
@@ -59,13 +59,16 @@ export default class SandBox {
   constructor(public app: BaseModel) {
     const windowDescriptorSet = new Set<PropertyKey>();
     const rawWindow = window;
-    // const rawDocument = createProxyDocument(document, app);
-    this.fakeWindow.__POWERED_BY_BK_WEWEB__ = true;
-    this.fakeWindow.__BK_WEWEB_APP_KEY__ = app.appCacheKey;
     this.rawWindow = rawWindow;
     this.rawDocument = createProxyDocument(document, app);
-    this.fakeWindow.rawWindow = rawWindow;
-    this.fakeWindow.rawDocument = document;
+    const fakeWindow = Object.create({});
+    fakeWindow.__BK_WEWEB_APP_KEY__ = app.appCacheKey;
+    fakeWindow.__POWERED_BY_BK_WEWEB__ = true;
+    fakeWindow.rawDocument = document;
+    fakeWindow.rawWindow = rawWindow;
+    fakeWindow.__proto__ = Window;
+    this.fakeWindow = fakeWindow as Window & IInjectWindowAttrs;
+
     const { resetWindowFunction } = rewriteWindowFunction(this.fakeWindow);
     this.resetWindowFunction = resetWindowFunction;
     this.windowSymbolKey = `__${(app.name || app.appCacheKey).replace(/(-|,|:|~|'|")/gim, '_')}_${random(
