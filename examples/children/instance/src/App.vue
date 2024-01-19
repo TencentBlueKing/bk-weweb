@@ -4,7 +4,7 @@
       alt="Vue logo"
       src="./assets/logo.png"
     />
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App" />
+    <HelloWorld msg="你好吗 这是一个微模块测试ddd" />
   </div>
 </template>
 <script lang="ts">

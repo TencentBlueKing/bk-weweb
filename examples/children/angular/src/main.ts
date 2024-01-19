@@ -23,17 +23,8 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-import Vue from 'vue';
+import { bootstrapApplication } from '@angular/platform-browser';
 
-import App from './App.vue';
-
-Vue.config.productionTip = false;
-const message = 'Hello World';
-export default {
-  message,
-  renderX: (dom: Element) => {
-    new Vue({
-      render: h => h(App),
-    }).$mount(dom);
-  },
-};
+import { AppComponent } from './app/app.component';
+import { appConfig } from './app/app.config';
+bootstrapApplication(AppComponent, appConfig).catch(err => console.error(err));
