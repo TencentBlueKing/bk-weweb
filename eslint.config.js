@@ -74,7 +74,7 @@ module.exports = [
     settings: {},
   },
   {
-    files: ['examples/vue3/**/*.vue'],
+    files: ['examples/vue3/**/*.vue', 'examples/main/**/*.vue'],
     languageOptions: {
       parser: eslintVueParser,
       parserOptions: {

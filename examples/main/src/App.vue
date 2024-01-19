@@ -1,33 +1,34 @@
 <template>
   <div>
-    <bk-navigation
+    <Navigation
       :default-open="true"
       navigation-type="top-bottom"
       side-title="蓝鲸微前端"
     >
       <template #menu>
-        <bk-menu
+        <Menu
           :active-key="activeMenu"
           @update:active-key="handleMenuChange"
         >
-          <bk-menu-item key="home">首页</bk-menu-item>
-          <bk-menu-item key="react">react应用</bk-menu-item>
-          <bk-menu-item key="iframe">iframe应用</bk-menu-item>
-          <bk-menu-item key="instance">微模块</bk-menu-item>
-          <bk-menu-item key="vue3">vue3应用</bk-menu-item>
-          <bk-menu-item key="vue2">vue2应用</bk-menu-item>
-          <bk-menu-item key="shadowDom">shadowDom应用</bk-menu-item>
+          <Menu.Item key="home">首页</Menu.Item>
+          <Menu.Item key="react">react应用</Menu.Item>
+          <Menu.Item key="iframe">iframe应用</Menu.Item>
+          <Menu.Item key="instance">微模块</Menu.Item>
+          <Menu.Item key="vue3">vue3应用</Menu.Item>
+          <Menu.Item key="vue2">vue2应用</Menu.Item>
+          <Menu.Item key="shadowDom">shadowDom应用</Menu.Item>
           <!-- <Menu.Item key="vite">vite</Menu.Item>
           <Menu.Item key="angular">angular</Menu.Item> -->
-        </bk-menu>
+        </Menu>
       </template>
       <div class="route-wrapper">
         <RouterView />
       </div>
-    </bk-navigation>
+    </Navigation>
   </div>
 </template>
 <script setup lang="ts">
+import { Menu, Navigation } from 'bkui-vue';
 import { computed } from 'vue';
 import { RouterView, useRoute, useRouter } from 'vue-router';
 const route = useRoute();

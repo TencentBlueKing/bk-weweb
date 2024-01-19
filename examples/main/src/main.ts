@@ -23,13 +23,10 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-import bkuiVue from 'bkui-vue/dist/index.esm.js';
-import 'bkui-vue/dist/style.css';
 import { createApp } from 'vue';
 
-import '../../../src/index';
 import App from './App.vue';
-import router from './router';
-import store from './store';
-createApp(App).use(bkuiVue).use(store).use(router).mount('#app');
-// app.config.compilerOptions.isCustomElement = tag => tag === ['custom-app', 'custom-instance', 'bk-weweb']
+import router from './router/index';
+import './style.css';
+import '../../../src/index';
+createApp(App).use(router).mount('#app');

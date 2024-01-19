@@ -99,7 +99,7 @@ export class EntrySource {
   ): { replace: Comment | Element; script?: Script } | undefined {
     if (
       script.hasAttribute('ignore') ||
-      isJsonpUrl(script.getAttribute('src')) ||
+      (script.type !== 'module' && isJsonpUrl(script.getAttribute('src'))) ||
       (script.hasAttribute('type') && !SCRIPT_TYPE_NAMES.includes(script.type))
     ) {
       return;

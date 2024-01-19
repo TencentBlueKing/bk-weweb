@@ -121,12 +121,13 @@ export class Script {
   // 脚本标签执行
   executeSourceScript(scriptElement: HTMLScriptElement, scopedCode: string): void {
     if (this.isModule) {
-      if (this.url?.match(/\.ts$/)) {
-        scriptElement.src = this.url;
-      } else {
-        const blob = new Blob([scopedCode], { type: 'text/javascript' });
-        scriptElement.src = URL.createObjectURL(blob);
-      }
+      scriptElement.src = this.url + '?key=' + Date.now()!;
+      // if (this.url?.match(/\.ts$/)) {
+      //   // scriptElement.src = this.url + '?key=' + Date.now()!;
+      // } else {
+      //   // const blob = new Blob([this.code], { type: 'text/javascript' });
+      //   // scriptElement.src = URL.createObjectURL(blob);
+      // }
       scriptElement.setAttribute('type', 'module');
     } else {
       scriptElement.textContent = scopedCode;
@@ -160,7 +161,12 @@ export class Script {
   // 转换脚本内容
   transformCode(app: BaseModel): string {
     if (app.sandBox) {
-      if (app.showSourceCode || this.isModule) {
+      if (this.isModule) {
+        return ` with(window.${app.sandBox.windowSymbolKey}){
+          ;${this.code}\n
+        }`;
+      }
+      if (app.showSourceCode) {
         return `;(function(window, self){
           with(window){
             ;${this.code}\n
