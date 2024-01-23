@@ -1,5 +1,5 @@
 <template>
-  <div class="common-app">
+  <div class="common-app-all">
     <div class="instance">
     <customApp
       :url="reacturl"
@@ -28,7 +28,7 @@ const reacturl = 'http://localhost:4004';
 const vue2url = 'http://localhost:4002';
 </script>
 <style lang="scss">
-.common-app {
+.common-app-all {
   display: flex;
   align-items: center;
   width: 100%;
