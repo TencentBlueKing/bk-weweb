@@ -55,11 +55,11 @@ export const createProxyDocument = (rawDocument: Document, app: BaseModel): Reco
         // ShadowRoot 处理逻辑简化
         if (app.container instanceof ShadowRoot) {
           app.container[key] = value;
-          return value;
+          return true;
         }
         // 直接设置 rawDocument.body 的属性
         Reflect.set(rawDocument.body, key, value);
-        return value;
+        return true;
       },
     },
   );
