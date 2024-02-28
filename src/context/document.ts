@@ -36,27 +36,30 @@ export const createProxyDocument = (rawDocument: Document, app: BaseModel): Reco
   const proxyBody = new Proxy(
     {},
     {
-      get(_, key: string | symbol) {
-        if (key === 'querySelector') {
-          if (app.container instanceof ShadowRoot) {
-            return app.container.querySelector.bind(app.container);
+      get(_, key) {
+        // ShadowRoot 处理逻辑简化
+        if (app.container instanceof ShadowRoot) {
+          const value = app.container[key];
+          if (typeof value === 'function') {
+            return value.bind(app.container);
           }
-          return querySelectorNew.bind(rawDocument.body as any);
-        }
-        if (key === 'querySelectorAll') {
-          if (app.container instanceof ShadowRoot) {
-            return app.container.querySelectorAll.bind(app.container);
+          if (value !== undefined) {
+            return value;
           }
-          return querySelectorAllNew.bind(rawDocument.body as any);
         }
-        if (key === 'insertAdjacentElement') {
-          return rawDocument.body.insertAdjacentElement.bind(rawDocument.body);
+        // 直接返回 rawDocument.body 的属性或绑定函数
+        const value = Reflect.get(rawDocument.body, key);
+        return typeof value === 'function' ? value.bind(rawDocument.body) : value;
+      },
+      set(_, key, value) {
+        // ShadowRoot 处理逻辑简化
+        if (app.container instanceof ShadowRoot) {
+          app.container[key] = value;
+          return true;
         }
-        const result = Reflect.get(rawDocument.body, key);
-        if (typeof result === 'function') {
-          return result.bind(rawDocument.body);
-        }
-        return result;
+        // 直接设置 rawDocument.body 的属性
+        Reflect.set(rawDocument.body, key, value);
+        return true;
       },
     },
   );

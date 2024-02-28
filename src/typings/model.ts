@@ -99,10 +99,10 @@ export interface BaseModel {
   deactivated(): void;
   get appCacheKey(): string;
   get status(): AppState;
-  set status(v: AppState);
-  // 初始化source 如 ['http://www.hostname.com/a.js', 'http://www.hostname.com/b.css']
   // eslint-disable-next-line perfectionist/sort-interfaces
   initSource?: SourceType;
+  isModuleApp?: boolean;
+  // 初始化source 如 ['http://www.hostname.com/a.js', 'http://www.hostname.com/b.css']
   isPreLoad: boolean;
   keepAlive?: boolean;
   mount<T>(container?: HTMLElement | ShadowRoot, callback?: (instance: BaseModel, exportInstance?: T) => void): void;
@@ -114,6 +114,7 @@ export interface BaseModel {
   // 是否启用样式隔离 默认隔离
   scopeCss?: boolean;
   scopeJs: boolean;
+  set status(v: AppState);
   showSourceCode?: boolean;
   source?: EntrySource;
   start(): Promise<void>;

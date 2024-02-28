@@ -41,17 +41,18 @@ export class MicroAppModel implements BaseModel {
   public data: Record<string, unknown>; // 数据
   iframe: HTMLIFrameElement | null = null; // scoped iframe
   initSource: SourceType; // 初始资源
-  public isPreLoad = false; // 是否预加载
-  keepAlive: boolean; // 是否缓存
-  mode: WewebMode = WewebMode.APP;
-  name: string; // 名称
-  sandBox?: SandBox; // 沙箱
-  scopeCss: boolean; // 是否隔离样式
-  scopeJs: boolean; // 是否隔离js
-  scopeLocation: boolean; // 是否隔离location
-  showSourceCode: boolean; // 是否显示源码
-  source?: EntrySource; // 入口资源
-  url: string; // url
+  isModuleApp = false; // 是否预加载
+  public isPreLoad = false; // 是否缓存
+  keepAlive: boolean;
+  mode: WewebMode = WewebMode.APP; // 名称
+  name: string; // 沙箱
+  sandBox?: SandBox; // 是否隔离样式
+  scopeCss: boolean; // 是否隔离js
+  scopeJs: boolean; // 是否隔离location
+  scopeLocation: boolean; // 是否显示源码
+  showSourceCode: boolean; // 入口资源
+  source?: EntrySource; // url
+  url: string; // 是否是esm应用
   constructor(props: IAppModleProps) {
     this.name = props.id !== props.url ? props.id! : random(5);
     this.mode = props.mode ?? WewebMode.APP;
@@ -76,10 +77,19 @@ export class MicroAppModel implements BaseModel {
   activated(container: HTMLElement | ShadowRoot, callback?: (app: BaseModel) => void) {
     this.isPreLoad = false;
     this.state = AppState.ACTIVATED;
+    const app = this;
     if (container && this.container) {
       if (container instanceof Element) container!.setAttribute(CSS_ATTRIBUTE_KEY, this.name);
       const fragment = document.createDocumentFragment();
       Array.from(this.container.childNodes).forEach((node: Element | Node) => {
+        node.__BK_WEWEB_APP_KEY__ = this.appCacheKey;
+        Object.defineProperties(node, {
+          ownerDocument: {
+            get() {
+              return app.sandBox?.rawDocument;
+            },
+          },
+        });
         fragment.appendChild(node);
       });
       container.innerHTML = '';
@@ -124,11 +134,20 @@ export class MicroAppModel implements BaseModel {
     this.isPreLoad = false;
     this.container = container ?? this.container!;
     this.state = AppState.MOUNTING;
+    const app = this;
     if (this.container) {
       if (this.container instanceof Element) this.container!.setAttribute(CSS_ATTRIBUTE_KEY, this.name);
       const clonedNode = this.source!.html!.cloneNode(true);
       const fragment = document.createDocumentFragment();
       Array.from(clonedNode.childNodes).forEach((node: Element | Node) => {
+        node.__BK_WEWEB_APP_KEY__ = this.appCacheKey;
+        Object.defineProperties(node, {
+          ownerDocument: {
+            get() {
+              return app.sandBox?.rawDocument;
+            },
+          },
+        });
         fragment.appendChild(node);
       });
       this.container.innerHTML = '';
@@ -155,7 +174,7 @@ export class MicroAppModel implements BaseModel {
   async start() {
     if (!this.source || [AppState.ERROR, AppState.UNSET].includes(this.status)) {
       this.state = AppState.LOADING;
-      if (this.scopeLocation) {
+      if (this.scopeLocation || this.isModuleApp) {
         const iframe = await this.createIframe();
         this.iframe = iframe;
       }
