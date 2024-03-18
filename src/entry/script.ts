@@ -238,7 +238,7 @@ export async function execAppScripts(app: BaseModel) {
   // if (appInitialScriptList.length) {
   //   await Promise.all(appInitialScriptList.map(script => script.excuteCode(app)));
   // }
-  const appScriptList = Array.from(app.source!.scripts.values()).filter(script => script.fromHtml);
+  const appScriptList = Array.from(app.source!.scripts.values()).filter(script => script.fromHtml || script.initial);
   const commomList = appScriptList.filter(script => (!script.async && !script.defer) || script.isModule);
   // 保证同步脚本 和 module类型 最先执行
   await Promise.all(commomList.map(script => script.getCode(app)));

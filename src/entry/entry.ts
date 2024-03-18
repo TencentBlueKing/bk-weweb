@@ -137,7 +137,7 @@ export class EntrySource {
         code: script.textContent,
         defer: script.type === 'module',
         fromHtml: !needReplaceELement,
-        initial: true,
+        initial: false,
         isModule: script.type === 'module',
         url: nonceStr!,
       });
