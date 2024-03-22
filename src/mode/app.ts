@@ -95,6 +95,7 @@ export class MicroAppModel implements BaseModel {
       container.innerHTML = '';
       container.appendChild(fragment);
       this.container = container;
+      this.initShadowRootContainer();
       this.sandBox?.activeated(this.data);
       callback?.(this);
     }
@@ -130,9 +131,22 @@ export class MicroAppModel implements BaseModel {
     this.state = AppState.DEACTIVATED;
     this.sandBox?.deactivated();
   }
+  initShadowRootContainer() {
+    if (this.container instanceof ShadowRoot) {
+      // inject echarts in shadowRoot
+      Object.defineProperties(this.container, {
+        getBoundingClientRect: {
+          get() {
+            return this.host.getBoundingClientRect;
+          },
+        },
+      });
+    }
+  }
   mount(container?: HTMLElement | ShadowRoot, callback?: (app: BaseModel) => void): void {
     this.isPreLoad = false;
     this.container = container ?? this.container!;
+    this.initShadowRootContainer();
     this.state = AppState.MOUNTING;
     const app = this;
     if (this.container) {
