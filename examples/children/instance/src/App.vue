@@ -8,25 +8,25 @@
   </div>
 </template>
 <script lang="ts">
-import Vue from 'vue';
+  import Vue from 'vue';
 
-import HelloWorld from './components/HelloWorld.vue';
+  import HelloWorld from './components/HelloWorld.vue';
 
-export default Vue.extend({
-  name: 'App',
-  components: {
-    HelloWorld,
-  },
-});
+  export default Vue.extend({
+    name: 'App',
+    components: {
+      HelloWorld,
+    },
+  });
 </script>
 
 <style>
-#app {
-  margin-top: 60px;
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  color: #2c3e50;
-  text-align: center;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  #app {
+    margin-top: 60px;
+    font-family: Avenir, Helvetica, Arial, sans-serif;
+    color: #2c3e50;
+    text-align: center;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 </style>

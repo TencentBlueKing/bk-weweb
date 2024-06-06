@@ -23,9 +23,7 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-/* eslint-disable no-new-func */
-/* eslint-disable no-param-reassign */
-/* eslint-disable no-prototype-builtins */
+
 import { MicroAppModel } from '../mode/app';
 import {
   BK_WEWEB_INJECT_KEY_LIST,
@@ -100,7 +98,7 @@ export default class SandBox {
         }
         if (key === 'eval') {
           app.registerRunningApp();
-          // eslint-disable-next-line no-eval
+
           return eval;
         }
         if (

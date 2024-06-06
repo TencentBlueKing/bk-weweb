@@ -23,8 +23,7 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-/* eslint-disable max-len */
-/* eslint-disable no-prototype-builtins */
+
 // 正则表达式，用于匹配类定义
 const CLASS_REGEX = /^class\b/;
 

@@ -18,12 +18,11 @@
 </template>
 
 <script lang="ts" setup>
-import CustomApp from '../components/custom-app.vue';
-// import CustomInstance from '../components/custom-instance.vue';
-// import CustomWebComponentApp from '../components/custom-webcomponent-app.vue';
-// import CustomWebComponentInstance from '../components/custom-webcomponent-instance.vue';
-// import PreloadSource from '../components/preload-srouce.vue';
-
+  import CustomApp from '../components/custom-app.vue';
+  // import CustomInstance from '../components/custom-instance.vue';
+  // import CustomWebComponentApp from '../components/custom-webcomponent-app.vue';
+  // import CustomWebComponentInstance from '../components/custom-webcomponent-instance.vue';
+  // import PreloadSource from '../components/preload-srouce.vue';
 </script>
 <style lang="scss">
   .bk-weweb {

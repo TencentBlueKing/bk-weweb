@@ -12,19 +12,19 @@
   </div>
 </template>
 <script lang="ts" setup>
-// import CustomApp from '../components/custom-app.vue';
-import CustomInstance from '../components/custom-instance.vue';
-// import CustomWebComponentInstance from '../components/custom-webcomponent-instance.vue';
+  // import CustomApp from '../components/custom-app.vue';
+  import CustomInstance from '../components/custom-instance.vue';
+  // import CustomWebComponentInstance from '../components/custom-webcomponent-instance.vue';
 </script>
 <style>
-.bk-weweb {
-  position: relative;
-  display: flex;
-  width: calc(100% - 40px);
-  height: 600px;
-  margin: 20px;
-  overflow: auto;
+  .bk-weweb {
+    position: relative;
+    display: flex;
+    width: calc(100% - 40px);
+    height: 600px;
+    margin: 20px;
+    overflow: auto;
 
-  /* transform: rotate(0deg); */
-}
+    /* transform: rotate(0deg); */
+  }
 </style>

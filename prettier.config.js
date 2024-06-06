@@ -23,45 +23,8 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-import { collectBaseSource } from './base-app/collect-source';
-import BkWewebElement from './component/web-compnent';
-import './context/cache';
-import { FetchSourceType, IStartOption } from './typings';
-export * from './lifecircle/activated';
-export * from './lifecircle/deactivated';
-export * from './lifecircle/load';
-export * from './lifecircle/mount';
-export * from './lifecircle/unload';
-export * from './lifecircle/unmount';
-export * from './preload/preload';
-export { WewebMode } from './typings';
-const CUSTOM_ELEMENT_TAG = 'bk-weweb';
-export class WeWeb {
-  fetchSource?: FetchSourceType;
-  webcomponentTag = CUSTOM_ELEMENT_TAG;
-  constructor() {
-    if (!window.customElements.get(CUSTOM_ELEMENT_TAG)) {
-      window.customElements.define(CUSTOM_ELEMENT_TAG, BkWewebElement);
-    }
-  }
-  // 设置自定义dom标签名
-  setWebComponentTag() {
-    if (!window.customElements.get(this.webcomponentTag)) {
-      window.customElements.define(this.webcomponentTag, BkWewebElement);
-    }
-  }
-  // todo set some global start props
-  start(option?: IStartOption) {
-    // 是否收集主应用资源
-    if (option?.collectBaseSource) {
-      collectBaseSource();
-    }
-    if (typeof option?.fetchSource === 'function') {
-      this.fetchSource = option.fetchSource;
-    }
-    this.webcomponentTag = option?.webcomponentTag || CUSTOM_ELEMENT_TAG;
-    this.setWebComponentTag();
-  }
-}
-const weWeb = new WeWeb();
-export default weWeb;
+
+const prettierConfig = require('@blueking/bkui-lint/prettier');
+module.exports = {
+  ...prettierConfig,
+};

@@ -23,7 +23,7 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-/* eslint-disable no-param-reassign */
+
 import { DocumentEventListener } from '../typings';
 // rewrite window funtion like settimeout setinterval ...
 export function rewriteWindowFunction(fakeWindow: Window & any): Record<string, CallableFunction> {

@@ -3,11 +3,13 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.js",
+    "./stylelint.config.js",
+    "./eslint.config.js",
+    "./prettier.config.js",
+    "./*.js",
+    "index.d.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ],
+  "exclude": ["node_modules", "dist"],
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
@@ -27,9 +29,7 @@
     "removeComments": false,
     "noImplicitAny": false,
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     }
   }
 }

@@ -23,9 +23,7 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-/* eslint-disable no-restricted-syntax */
-/* eslint-disable no-prototype-builtins */
-/* eslint-disable no-param-reassign */
+
 import { appCache } from '../cache/app-cache';
 import { MicroAppModel } from '../mode/app';
 import { MicroInstanceModel } from '../mode/instance';
@@ -108,7 +106,7 @@ export class Script {
     try {
       const isScopedLocation = app instanceof MicroAppModel && app.scopeLocation;
       app.registerRunningApp();
-      // eslint-disable-next-line no-new-func
+
       new Function('window', 'location', 'history', scopedCode)(
         app.sandBox!.proxyWindow,
         isScopedLocation ? app.iframe!.contentWindow!.location : window.location,
