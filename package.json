@@ -1,6 +1,6 @@
 {
   "name": "@blueking/bk-weweb",
-  "version": "0.0.25.beta.15",
+  "version": "0.0.26",
   "description": "bk micro frontend web",
   "private": false,
   "main": "dist/index.esm.js",
@@ -51,7 +51,7 @@
   },
   "lint-staged": {
     "src/*/*.{js,ts}": [
-      "eslint --ext .tsx,.ts --cache --fix"
+      "eslint --cache --fix"
     ]
   },
   "devDependencies": {

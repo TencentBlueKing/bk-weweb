@@ -26,16 +26,18 @@
 const typescriptEslint = require('@typescript-eslint/eslint-plugin');
 const eslintVueParser = require('vue-eslint-parser');
 const eslintVuePlugin = require('eslint-plugin-vue');
-
+const OFF = 0;
+// const WARNING = 1;
+// const ERROR = 2;
 module.exports = [
   ...require('@blueking/bkui-lint/eslint'),
   {
     rules: {
-      'vue/multi-word-component-names': 'off',
-      'vue/no-reserved-component-names': 'off',
-      '@typescript-eslint/no-require-imports': 'off',
-      '@typescript-eslint/no-var-requires': 'off',
-      'perfectionist/sort-classes': 'off',
+      'vue/multi-word-component-names': OFF,
+      'vue/no-reserved-component-names': OFF,
+      '@typescript-eslint/no-require-imports': OFF,
+      '@typescript-eslint/no-var-requires': OFF,
+      'perfectionist/sort-classes': OFF,
     },
   },
   {
@@ -60,7 +62,7 @@ module.exports = [
     },
     rules: {
       ...eslintVuePlugin.configs['vue3-recommended'].rules,
-      '@typescript-eslint/explicit-member-accessibility': 'off',
+      '@typescript-eslint/explicit-member-accessibility': OFF,
       '@typescript-eslint/indent': ['error', 2],
       'comma-dangle': ['error', 'always-multiline'],
     },
@@ -87,7 +89,7 @@ module.exports = [
     },
     rules: {
       ...eslintVuePlugin.configs['recommended'].rules,
-      '@typescript-eslint/explicit-member-accessibility': 'off',
+      '@typescript-eslint/explicit-member-accessibility': OFF,
       '@typescript-eslint/indent': ['error', 2],
       'comma-dangle': ['error', 'always-multiline'],
     },

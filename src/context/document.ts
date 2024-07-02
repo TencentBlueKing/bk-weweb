@@ -31,14 +31,38 @@ const SPECIAL_ELEMENT_TAG = ['body', 'html', 'head'];
  * @param app 应用实例
  * @returns 代理的document
  */
-export const createProxyDocument = (rawDocument: Document, app: BaseModel): Record<string, any> => {
+export const createProxyDocument = (rawDocument: Document, app: BaseModel) => {
   const fakeDocument = {};
+  function shadowRootInsertAdjacentHTML(where: InsertPosition, domString: string) {
+    const temporaryContainer = document.createElement('div');
+    temporaryContainer.innerHTML = domString;
+    const elements = Array.from(temporaryContainer.childNodes);
+    const shadow = app.container! as ShadowRoot;
+    switch (where) {
+      case 'beforebegin':
+        elements.forEach(el => shadow.host.parentNode?.insertBefore(el, shadow.host));
+        break;
+      case 'afterbegin':
+        elements.reverse().forEach(el => shadow.insertBefore(el, shadow.firstChild));
+        break;
+      case 'beforeend':
+        elements.forEach(el => shadow.appendChild(el));
+        break;
+      case 'afterend':
+        elements.forEach(el => shadow.host.parentNode?.insertBefore(el, shadow.host.nextSibling));
+        break;
+    }
+  }
   const proxyBody = new Proxy(
     {},
     {
       get(_, key) {
         // ShadowRoot 处理逻辑简化
         if (app.container instanceof ShadowRoot) {
+          if (key === 'insertAdjacentHTML') {
+            // shadowRoot 中没有 insertAdjacentHTML
+            return shadowRootInsertAdjacentHTML.bind(app.container);
+          }
           const value = app.container[key];
           if (typeof value === 'function') {
             return value.bind(app.container);
@@ -90,7 +114,7 @@ export const createProxyDocument = (rawDocument: Document, app: BaseModel): Reco
    * @param selectors 选择器字符串
    * @returns 匹配的元素或 null
    */
-  function querySelectorNew(this: Document, selectors: string): any {
+  function querySelectorNew(this: Document, selectors: string) {
     if (selectors === proxyBody) {
       return app.container instanceof ShadowRoot ? app.container : rawDocument.body;
     }
@@ -115,7 +139,7 @@ export const createProxyDocument = (rawDocument: Document, app: BaseModel): Reco
    * @param selectors - 要查询的选择器
    * @returns 匹配到的元素列表或空数组
    */
-  function querySelectorAllNew(selectors: string): any {
+  function querySelectorAllNew(selectors: string) {
     // 如果选择器是特殊元素标签，则返回容器元素或调用原生 querySelector 方法
     if (SPECIAL_ELEMENT_TAG.includes(selectors)) {
       if (app?.container instanceof ShadowRoot) {
@@ -126,19 +150,19 @@ export const createProxyDocument = (rawDocument: Document, app: BaseModel): Reco
     // 返回运行中应用程序的容器元素中匹配到的元素列表或空数组
     return app?.container?.querySelectorAll(selectors) ?? [];
   }
-  function getElementByIdNew(key: string): HTMLElement | null {
+  function getElementByIdNew(key: string) {
     return querySelectorNew.call(rawDocument, `#${key}`);
   }
-  function getElementsByClassName(key: string): HTMLCollectionOf<Element> {
+  function getElementsByClassName(key: string) {
     return querySelectorAllNew(`.${key}`);
   }
-  function getElementsByTagName<K extends keyof HTMLElementTagNameMap>(key: K): HTMLCollectionOf<Element> {
+  function getElementsByTagName<K extends keyof HTMLElementTagNameMap>(key: K) {
     if (SPECIAL_ELEMENT_TAG.includes(key) || (!app?.showSourceCode && key.toLocaleLowerCase() === 'script')) {
-      return rawDocument.getElementsByTagName(key) as any;
+      return rawDocument.getElementsByTagName(key);
     }
     return querySelectorAllNew(key);
   }
-  function getElementsByNameNew(key: string): NodeListOf<HTMLElement> {
+  function getElementsByNameNew(key: string) {
     return querySelectorAllNew(`[name=${key}]`);
   }
   return new Proxy(fakeDocument, {
