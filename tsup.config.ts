@@ -23,38 +23,18 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-import { appCache } from '../cache/app-cache';
-import { Style } from '../entry/style';
-import { randomUrl } from '../utils/common';
-import { baseElementAppendHandle, baseElementInertHandle } from './element';
-/**
- * 收集主应用的资源
- */
-export function collectBaseSource() {
-  const rawBodyAppendChild = HTMLBodyElement.prototype.appendChild;
-  const rawHeadAppendChild = HTMLHeadElement.prototype.appendChild;
-  const rawHeadInsertBefore = HTMLHeadElement.prototype.appendChild;
-  HTMLBodyElement.prototype.appendChild = function <T extends Node>(newChild: T): T {
-    return baseElementAppendHandle(this, newChild, rawBodyAppendChild);
-  };
-  HTMLHeadElement.prototype.appendChild = function <T extends Node>(newChild: T): T {
-    return baseElementAppendHandle(this, newChild, rawHeadAppendChild);
-  };
-  HTMLHeadElement.prototype.insertBefore = function <T extends Node>(newChild: T, refChild: Node | null): T {
-    return baseElementInertHandle(this, newChild, refChild, rawHeadInsertBefore);
-  };
-  window.addEventListener('load', () => {
-    const nodeList: NodeListOf<HTMLStyleElement> = document.head.querySelectorAll('style');
-    nodeList.forEach(node => {
-      node.textContent &&
-        appCache.setBaseAppStyle(
-          randomUrl(),
-          new Style({
-            code: node.textContent,
-            fromHtml: false,
-            url: '',
-          }),
-        );
-    });
-  });
-}
+import { defineConfig } from 'tsup';
+export default defineConfig({
+  entry: ['src/index.ts', 'src/base-app/collect-source.ts'],
+  format: ['esm'],
+  dts: true,
+  splitting: false,
+  sourcemap: true,
+  clean: true,
+  minify: false,
+  outExtension({ format }) {
+    return {
+      js: `.${format}.js`,
+    };
+  },
+});

@@ -1,18 +1,17 @@
 {
   "name": "@blueking/bk-weweb",
-  "version": "0.0.26",
+  "version": "0.0.26-beta.1",
   "description": "bk micro frontend web",
   "private": false,
   "main": "dist/index.esm.js",
-  "typings": "./typings",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.mts",
   "scripts": {
-    "prepublishOnly": "run-p build generate:decalation",
+    "prepublishOnly": "run-s build",
     "start": "run-p dev:*",
     "start:install": "run-p install:*",
-    "prepublish": "run-s build generate:decalation",
     "postversion": "git push && git push --tags",
-    "generate:decalation": "tsc -p ./tsconfig.declaration.json",
-    "build": "cross-env NODE_ENV='production' rollup -c scripts/rollup-config.js --bundleConfigAsCjs",
+    "build": "tsup --env.NODE_ENV production",
     "doc:install": "cd ./docs && npm i",
     "doc": "cd ./docs && yarn dev --port 8005",
     "instance:install": "cd ./examples/instance && npm i",
@@ -40,8 +39,7 @@
     "custom micro web"
   ],
   "files": [
-    "dist",
-    "typings"
+    "dist"
   ],
   "author": "bk fe",
   "license": "MIT",
@@ -50,20 +48,12 @@
     "commit-msg": "node scripts/verify-commit.mjs"
   },
   "lint-staged": {
-    "src/*/*.{js,ts}": [
+    "src/**/*.{js,ts}": [
       "eslint --cache --fix"
     ]
   },
   "devDependencies": {
-    "@babel/core": "^7.23.5",
-    "@babel/plugin-transform-runtime": "^7.23.4",
-    "@babel/preset-env": "^7.23.5",
-    "@babel/runtime": "^7.23.5",
     "@blueking/bkui-lint": "^0.0.3",
-    "@rollup/plugin-babel": "^6.0.4",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^11.1.5",
     "@types/node": "^20.10.3",
     "@typescript-eslint/eslint-plugin": "^6.13.2",
     "@typescript-eslint/parser": "^6.13.2",
@@ -75,9 +65,9 @@
     "postcss-html": "^1.5.0",
     "postcss-scss": "^4.0.9",
     "prettier": "^3.1.0",
-    "rollup": "^3.29.4",
     "simple-git-hooks": "^2.9.0",
     "tslib": "^2.6.2",
+    "tsup": "^8.1.0",
     "typescript": "^5.3.2",
     "vue-eslint-parser": "^9.3.2"
   },
