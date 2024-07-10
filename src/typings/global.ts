@@ -23,8 +23,8 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-import { AppCache } from '../cache/app-cache';
-import { BaseModel } from './model';
+import type { AppCache } from '../cache/app-cache';
+import type { BaseModel } from './model';
 
 declare global {
   interface Window {

@@ -24,9 +24,10 @@
  * IN THE SOFTWARE.
  */
 import { appCache } from '../cache/app-cache';
-import { BaseModel } from '../typings';
 import { nextTask } from '../utils/common';
 import { beforeLoad } from './before-load';
+
+import type { BaseModel } from '../typings';
 // mount
 export function mount<T>(
   appKey: string,

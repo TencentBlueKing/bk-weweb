@@ -9,7 +9,6 @@
     "examples/**/*.vue",
     "examples/**/*.tsx",
     "examples/**/*.js",
-    "scripts/*.js",
-    "./tsup.config.ts"
+    "scripts/*.js"
   ]
 }

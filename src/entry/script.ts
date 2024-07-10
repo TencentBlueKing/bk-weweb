@@ -27,9 +27,10 @@
 import { appCache } from '../cache/app-cache';
 import { MicroAppModel } from '../mode/app';
 import { MicroInstanceModel } from '../mode/instance';
-import { BaseModel, IScriptOption } from '../typings';
 import { setMarkElement } from '../utils';
 import { fetchSource } from '../utils/fetch';
+
+import type { BaseModel, IScriptOption } from '../typings';
 
 let firstGlobalProp: string | undefined;
 let secondGlobalProp: string | undefined;

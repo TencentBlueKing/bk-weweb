@@ -26,7 +26,8 @@
 import { collectBaseSource } from './base-app/collect-source';
 import BkWewebElement from './component/web-compnent';
 import './context/cache';
-import { FetchSourceType, IStartOption } from './typings';
+
+import type { FetchSourceType, IStartOption } from './typings';
 export * from './lifecircle/activated';
 export * from './lifecircle/deactivated';
 export * from './lifecircle/load';

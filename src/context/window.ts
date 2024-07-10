@@ -24,7 +24,7 @@
  * IN THE SOFTWARE.
  */
 
-import { DocumentEventListener } from '../typings';
+import type { DocumentEventListener } from '../typings';
 // rewrite window funtion like settimeout setinterval ...
 export function rewriteWindowFunction(fakeWindow: Window & any): Record<string, CallableFunction> {
   const windowEventLisenerMap = new Map<string, DocumentEventListener[]>();
@@ -32,19 +32,19 @@ export function rewriteWindowFunction(fakeWindow: Window & any): Record<string, 
   const rawWindow = window;
   const { addEventListener, clearInterval, removeEventListener, setInterval } = window;
 
-  fakeWindow.addEventListener = function (
+  fakeWindow.addEventListener = (
     type: string,
     listener: DocumentEventListener,
     options?: AddEventListenerOptions | boolean,
-  ): void {
+  ): void => {
     windowEventLisenerMap.set(type, [...(windowEventLisenerMap.get(type) || []), listener]);
     addEventListener.call(rawWindow, type, listener, options);
   };
-  fakeWindow.removeEventListener = function (
+  fakeWindow.removeEventListener = (
     type: string,
     listener: DocumentEventListener,
     options?: AddEventListenerOptions | boolean,
-  ): void {
+  ): void => {
     const listenerList = windowEventLisenerMap.get(type);
     if (listenerList?.length) {
       const index = listenerList.indexOf(listener);
@@ -52,16 +52,16 @@ export function rewriteWindowFunction(fakeWindow: Window & any): Record<string, 
     }
     removeEventListener.call(rawWindow, type, listener, options);
   };
-  fakeWindow.setInterval = function (
+  fakeWindow.setInterval = (
     handler: TimerHandler | string,
     timeout?: number | undefined,
     ...args: any[]
-  ): ReturnType<typeof setInterval> {
+  ): ReturnType<typeof setInterval> => {
     const timer = setInterval.call(rawWindow, handler as any, timeout, ...(args as []));
     intervalTimerList.push(timer);
     return timer;
   };
-  fakeWindow.clearInterval = function (timer: ReturnType<typeof setInterval>) {
+  fakeWindow.clearInterval = (timer: ReturnType<typeof setInterval>) => {
     const index = intervalTimerList.indexOf(timer);
     index > -1 && intervalTimerList.splice(index, 1);
     clearInterval.call(rawWindow, timer as any);

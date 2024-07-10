@@ -27,7 +27,7 @@ import { appCache } from '../cache/app-cache';
 import { AppState } from '../common';
 import { MicroAppModel } from '../mode/app';
 import { MicroInstanceModel } from '../mode/instance';
-import { BaseModel, IAppModleProps, IBaseModelProps, IJsModelProps, WewebMode } from '../typings';
+import { type BaseModel, type IAppModleProps, type IBaseModelProps, type IJsModelProps, WewebMode } from '../typings';
 import { beforeLoad } from './before-load';
 
 export async function load(props: IBaseModelProps): Promise<BaseModel> {

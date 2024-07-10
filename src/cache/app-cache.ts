@@ -25,9 +25,10 @@
  */
 import { AppState } from '../common';
 import { EntrySource } from '../entry/entry';
-import { Script } from '../entry/script';
-import { Style } from '../entry/style';
-import { BaseModel } from '../typings';
+
+import type { Script } from '../entry/script';
+import type { Style } from '../entry/style';
+import type { BaseModel } from '../typings';
 // 所有应用缓存
 export class AppCache {
   // todo 主应用共享资源包
@@ -93,7 +94,7 @@ export class AppCache {
 }
 const appCache = new AppCache();
 // 注册全局获取缓存app 或者 instance
-window.__getAppOrInstance__ = function (id?: string) {
+window.__getAppOrInstance__ = (id?: string) => {
   if (!id) return appCache;
   return appCache.getApp(id);
 };

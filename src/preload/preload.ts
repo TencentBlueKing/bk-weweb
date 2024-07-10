@@ -25,9 +25,10 @@
  */
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { loadApp, loadInstance } from '../lifecircle/load';
-import { IAppModleProps, IJsModelProps } from '../typings';
 import { requestIdleCallback } from '../utils/common';
-import { SourceType, loadGlobalSource } from '../utils/load-source';
+import { type SourceType, loadGlobalSource } from '../utils/load-source';
+
+import type { IAppModleProps, IJsModelProps } from '../typings';
 
 /**
  * @param options 加载模块的参数

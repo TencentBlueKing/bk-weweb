@@ -1,0 +1,5 @@
+{
+  "*.{ts,tsx,js,jsx}": ["biome check --write", "eslint --cache --fix"],
+  "*.{json,css}": ["biome check --write"],
+  "*.{md,yml}": ["prettier --ignore-unknown --write"]
+}

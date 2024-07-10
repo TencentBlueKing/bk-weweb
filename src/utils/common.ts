@@ -81,7 +81,7 @@ export function randomUrl(): string {
  */
 export const requestIdleCallback =
   window.requestIdleCallback ||
-  function (cb: CallableFunction) {
+  ((cb: CallableFunction) => {
     const start = Date.now();
     return setTimeout(() => {
       cb({
@@ -91,16 +91,16 @@ export const requestIdleCallback =
         },
       });
     }, 1);
-  };
+  });
 
 /**
  * cancelIdleCallback polyfill
  */
 export const cancelIdleCallback =
   window.cancelIdleCallback ||
-  function (id: number) {
+  ((id: number) => {
     clearTimeout(id);
-  };
+  });
 
 /**
  *
@@ -112,7 +112,7 @@ export const random = (n: number, str = 'abcdefghijklmnopqrstuvwxyz0123456789') 
   // 生成n位长度的字符串
   let result = '';
   for (let i = 0; i < n; i++) {
-    result += str[parseInt((Math.random() * str.length).toString(), 10)];
+    result += str[Number.parseInt((Math.random() * str.length).toString(), 10)];
   }
   return result;
 };

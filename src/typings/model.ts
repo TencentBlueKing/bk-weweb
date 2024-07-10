@@ -23,11 +23,11 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-import { AppState } from '../common';
+import type { AppState } from '../common';
 import { WewebCustomAttrs } from '../component/web-compnent';
-import SandBox from '../context/sandbox';
-import { EntrySource } from '../entry/entry';
-import { SourceType } from '../utils/load-source';
+import type SandBox from '../context/sandbox';
+import type { EntrySource } from '../entry/entry';
+import type { SourceType } from '../utils/load-source';
 
 export interface IComponentProps {
   // 传递给子应用的数据 默认保存
@@ -123,7 +123,7 @@ export interface BaseModel {
 }
 
 export enum WewebMode {
-  'APP' = 'app',
-  'CONFIG' = 'config',
-  'INSTANCE' = 'js',
+  APP = 'app',
+  CONFIG = 'config',
+  INSTANCE = 'js',
 }

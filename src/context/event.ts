@@ -24,8 +24,9 @@
  * IN THE SOFTWARE.
  */
 
-import { DocumentEventListener } from '../typings';
 import { getCurrentRunningApp } from './cache';
+
+import type { DocumentEventListener } from '../typings';
 // rewrite document and body event listener
 export function rewriteDocumentAndBodyEvent(): { resetDocumentAndBodyEvent: () => void } {
   const { addEventListener, removeEventListener } = window.document;

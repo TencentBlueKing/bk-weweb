@@ -26,7 +26,7 @@
 
 import { appCache } from '../cache/app-cache';
 // import { disabledStyleDom } from '../context/cache';
-import { BaseModel, CssRuleEnum, IStyleOption } from '../typings';
+import { type BaseModel, CssRuleEnum, type IStyleOption } from '../typings';
 import { setMarkElement } from '../utils';
 import { addUrlProtocol, fillUpPath } from '../utils/common';
 import { dispatchLinkOrScriptError, dispatchLinkOrScriptLoad } from '../utils/custom';

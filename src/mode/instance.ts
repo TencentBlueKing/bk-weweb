@@ -30,9 +30,10 @@ import SandBox from '../context/sandbox';
 import { EntrySource } from '../entry/entry';
 import { execAppScripts } from '../entry/script';
 import { excuteAppStyles } from '../entry/style';
-import { BaseModel, CSS_ATTRIBUTE_KEY, IJsModelProps } from '../typings';
+import { type BaseModel, CSS_ATTRIBUTE_KEY, type IJsModelProps } from '../typings';
 import { random } from '../utils/common';
-import { SourceType } from '../utils/load-source';
+
+import type { SourceType } from '../utils/load-source';
 // bk-kweweb 微模块模式
 export class MicroInstanceModel implements BaseModel {
   private state: AppState = AppState.UNSET; // 当前实例状态
@@ -72,7 +73,7 @@ export class MicroInstanceModel implements BaseModel {
     this.isPreLoad = false;
     this.state = AppState.ACTIVATED;
     if (this.container && container) {
-      if (container instanceof Element) container!.setAttribute(CSS_ATTRIBUTE_KEY, this.name);
+      if (container instanceof Element) container?.setAttribute(CSS_ATTRIBUTE_KEY, this.name);
       const fragment = document.createDocumentFragment();
       Array.from(this.container.childNodes).forEach((node: Element | Node) => {
         fragment.appendChild(node);

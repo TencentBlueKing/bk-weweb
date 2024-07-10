@@ -25,9 +25,10 @@
  */
 import { appCache } from '../cache/app-cache';
 import { AppState } from '../common';
-import { BaseModel } from '../typings';
 import { nextTask } from '../utils/common';
 import { beforeLoad } from './before-load';
+
+import type { BaseModel } from '../typings';
 // 激活应用
 export function activated<T>(
   appKey: string,

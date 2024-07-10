@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/member-ordering */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /*
  * Tencent is pleased to support the open source community by making
  * 蓝鲸智云PaaS平台 (BlueKing PaaS) available.
@@ -31,7 +31,7 @@ import { activated } from '../lifecircle/activated';
 import { deactivated } from '../lifecircle/deactivated';
 import { load } from '../lifecircle/load';
 import { unmount } from '../lifecircle/unmount';
-import { IAppModleProps, IJsModelProps, WewebMode } from '../typings';
+import { type IAppModleProps, type IJsModelProps, WewebMode } from '../typings';
 // bk-weweb支持的属性配置
 export enum WewebCustomAttrs {
   data = 'data', // 传递给子应用的数据
@@ -52,7 +52,7 @@ export default class BkWewebElement extends HTMLElement {
     return [WewebCustomAttrs.url];
   }
   private getBooleanAttr(name: string): boolean | undefined {
-    return this.hasAttribute(name) || this.hasAttribute(name.replace(/([A-Z])/g, `-$1`).toLocaleLowerCase())
+    return this.hasAttribute(name) || this.hasAttribute(name.replace(/([A-Z])/g, '-$1').toLocaleLowerCase())
       ? this.getAttribute(name) !== 'false'
       : undefined;
   }
@@ -61,15 +61,15 @@ export default class BkWewebElement extends HTMLElement {
     if (this.getBooleanAttr(WewebCustomAttrs.setShodowDom)) {
       this.attachShadow({ mode: 'open' });
     }
-    const app = appCache.getApp(this.appKey!);
+    const app = appCache.getApp(this.appKey);
     if (app && app.url === this.appUrl && (app.isPreLoad || app.status === AppState.UNMOUNT)) {
-      activated(this.appKey!, this.shadowRoot ?? this);
+      activated(this.appKey, this.shadowRoot ?? this);
       return;
     }
     await load(this.appProps);
   }
   attributeChangedCallback(attr: WewebCustomAttrs, _oldVal: string, newVal: string): void {
-    if (attr !== WewebCustomAttrs.url || (this as any)[attr] === newVal || !this.connected) return;
+    if (attr !== WewebCustomAttrs.url || this[attr] === newVal || !this.connected) return;
     this.appUrl = newVal;
     const cacheApp = appCache.getApp(this.appKey!);
     (this.connected || cacheApp) && this.handleAttributeChanged();

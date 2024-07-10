@@ -28,9 +28,9 @@ import { MicroAppModel } from '../mode/app';
 import {
   BK_WEWEB_INJECT_KEY_LIST,
   BK_WEWEB_LOCATION_KEY_LIST,
-  BaseModel,
+  type BaseModel,
   DEV_MICRO_APP_WINDOE_KEY_MAP,
-  IInjectWindowAttrs,
+  type IInjectWindowAttrs,
   WINDOW_ALIAS_LIST,
   WINDOW_WHITE_LIST,
 } from '../typings';

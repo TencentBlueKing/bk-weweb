@@ -26,9 +26,10 @@
 import { appCache } from '../cache/app-cache';
 import { Script } from '../entry/script';
 import { Style } from '../entry/style';
-import { BaseModel } from '../typings';
 import { isJsonpUrl, randomUrl } from './common';
 import { dispatchLinkOrScriptLoad } from './custom';
+
+import type { BaseModel } from '../typings';
 
 const { appendChild: bodyAppendChild } = HTMLBodyElement.prototype;
 export function resetNewElement(parent: Node, child: Node, app: BaseModel): Node {

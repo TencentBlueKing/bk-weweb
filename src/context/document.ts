@@ -23,7 +23,7 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-import { BaseModel } from '../typings/model';
+import type { BaseModel } from '../typings/model';
 const SPECIAL_ELEMENT_TAG = ['body', 'html', 'head'];
 /**
  * 创建代理的document

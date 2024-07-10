@@ -29,9 +29,10 @@ import { setCurrentRunningApp } from '../context/cache';
 import SandBox from '../context/sandbox';
 import { EntrySource } from '../entry/entry';
 import { execAppScripts } from '../entry/script';
-import { BaseModel, CSS_ATTRIBUTE_KEY, IAppModleProps, WewebMode } from '../typings';
+import { type BaseModel, CSS_ATTRIBUTE_KEY, type IAppModleProps, WewebMode } from '../typings';
 import { addUrlProtocol, random } from '../utils/common';
-import { SourceType } from '../utils/load-source';
+
+import type { SourceType } from '../utils/load-source';
 
 const BLANK_ORIGN = 'about:blank';
 // bk-weweb 微应用模式

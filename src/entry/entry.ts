@@ -26,12 +26,13 @@
 import { appCache } from '../cache/app-cache';
 import { MicroAppModel } from '../mode/app';
 import { MicroInstanceModel } from '../mode/instance';
-import { BaseModel, IScriptOption } from '../typings';
 import { addUrlProtocol, fillUpPath, isJsonpUrl, randomUrl } from '../utils/common';
 import { fetchSource } from '../utils/fetch';
 import { collectSource } from '../utils/load-source';
 import { Script } from './script';
 import { Style, excuteAppStyles } from './style';
+
+import type { BaseModel, IScriptOption } from '../typings';
 
 const SCRIPT_TYPE_NAMES = [
   'text/javascript',

@@ -23,7 +23,7 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-import { BaseModel } from '../typings';
+import type { BaseModel } from '../typings';
 // 当前正在运行的app
 let currentRunningApp: BaseModel | null = null;
 export function getCurrentRunningApp() {
