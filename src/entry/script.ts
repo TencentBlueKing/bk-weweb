@@ -25,6 +25,7 @@
  */
 
 import { appCache } from '../cache/app-cache';
+import { getGlobalContextCode } from '../context/cache';
 import { MicroAppModel } from '../mode/app';
 import { MicroInstanceModel } from '../mode/instance';
 import { setMarkElement } from '../utils';
@@ -151,6 +152,7 @@ export class Script {
         return '';
       });
     }
+    code = code.replace(/^"use\sstrict";$/gim, '');
     this.code = code;
     return code;
   }
@@ -166,16 +168,18 @@ export class Script {
         }`;
       }
       if (app.showSourceCode) {
-        return `;(function(window, self){
+        return `;(function(window, self, globalThis){
           with(window){
-            ;${this.code}\n
+            ${getGlobalContextCode()}\n
+            ${this.code}\n
           }
         }).call(window.${app.sandBox.windowSymbolKey},
-           window.${app.sandBox.windowSymbolKey});`;
+           window.${app.sandBox.windowSymbolKey}, window.${app.sandBox.windowSymbolKey}, window.${app.sandBox.windowSymbolKey});`;
       }
       return `
           with(window) {
-              try {
+            try {
+              ${getGlobalContextCode()}\n
                 ${this.code}
               }
               catch(e) {
@@ -191,7 +195,7 @@ export class Script {
 export function shouldSkipProperty(global: Window, p: any) {
   return (
     !global.hasOwnProperty(p) ||
-    (!isNaN(p) && p < global.length) ||
+    (!Number.isNaN(p) && p < global.length) ||
     (typeof navigator !== 'undefined' &&
       navigator.userAgent.indexOf('Trident') !== -1 &&
       global[p] &&
@@ -202,8 +206,8 @@ export function shouldSkipProperty(global: Window, p: any) {
 // 获取instance js source code 执行后 绑定的export 实例
 export function getGlobalProp(global: Window, useFirstGlobalProp?: boolean) {
   let cnt = 0;
-  let foundLastProp;
-  let result;
+  let foundLastProp: boolean | undefined;
+  let result: string | undefined;
   for (const p in global) {
     // do not check frames cause it could be removed during import
     if (shouldSkipProperty(global, p)) continue;
@@ -247,13 +251,13 @@ export async function execAppScripts(app: BaseModel) {
   const deferScriptList: Promise<Comment | HTMLScriptElement | undefined>[] = [];
   const asyncScriptList: Promise<Comment | HTMLScriptElement | undefined>[] = [];
   // async defer 脚本执行
-  appScriptList.forEach(script => {
+  for (const script of appScriptList) {
     if (script.defer || script.async) {
       if (!script.code && script.defer) {
         deferScriptList.push(script.excuteCode(app));
       } else asyncScriptList.push(script.excuteCode(app));
     }
-  });
+  }
   await Promise.all([...asyncScriptList, ...deferScriptList]).catch(e => {
     console.error(e);
   });

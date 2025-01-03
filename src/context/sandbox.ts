@@ -40,7 +40,6 @@ import { createProxyDocument } from './document';
 import { rewriteDocumentAndBodyEvent } from './event';
 import bindFunctionToRawWindow from './function';
 import { rewriteWindowFunction } from './window';
-
 export default class SandBox {
   private active = false;
   private inRawWindowKeySet = new Set<PropertyKey>();
@@ -89,7 +88,7 @@ export default class SandBox {
         return true;
       },
       get: (target: Window, key: string | symbol): unknown => {
-        if (windowNativeFuncMap.has(key) || key === Symbol.unscopables) return rawWindow[key as any];
+        if (key === Symbol.unscopables || windowNativeFuncMap.has(key)) return rawWindow[key as any];
         if (DEV_MICRO_APP_WINDOE_KEY_MAP[key]) return this.fakeWindow[key as any];
         if (WINDOW_ALIAS_LIST.includes(key as string)) return this.proxyWindow;
         if (key === 'document') {
@@ -194,9 +193,9 @@ export default class SandBox {
         return true;
       },
     });
-    if (app.showSourceCode) {
-      rawWindow[this.windowSymbolKey as any] = this.proxyWindow;
-    }
+    // if (app.showSourceCode) {
+    // }
+    rawWindow[this.windowSymbolKey as any] = this.proxyWindow;
   }
   /**
    *

@@ -34,19 +34,82 @@ export function setCurrentRunningApp(appInstance: BaseModel | null) {
 }
 export const SCOPED_CSS_STYLE_ID = 'SCOPED_CSS_STYLE_ID';
 export const windowNativeFuncMap = new Map<PropertyKey, true>();
+const globalContextCode = `const { ${[
+  'Array',
+  'ArrayBuffer',
+  'Boolean',
+  'constructor',
+  'DataView',
+  'Date',
+  'decodeURI',
+  'decodeURIComponent',
+  'encodeURI',
+  'encodeURIComponent',
+  'Error',
+  'escape',
+  'eval',
+  'EvalError',
+  'Float32Array',
+  'Float64Array',
+  'Function',
+  'hasOwnProperty',
+  'Infinity',
+  'Int16Array',
+  'Int32Array',
+  'Int8Array',
+  'isFinite',
+  'isNaN',
+  'isPrototypeOf',
+  'JSON',
+  'Map',
+  'Math',
+  'NaN',
+  'Number',
+  'Object',
+  'parseFloat',
+  'parseInt',
+  'Promise',
+  'propertyIsEnumerable',
+  'Proxy',
+  'RangeError',
+  'ReferenceError',
+  'Reflect',
+  'RegExp',
+  'Set',
+  'String',
+  'Symbol',
+  'SyntaxError',
+  'toLocaleString',
+  'toString',
+  'TypeError',
+  'Uint16Array',
+  'Uint32Array',
+  'Uint8Array',
+  'Uint8ClampedArray',
+  'undefined',
+  'unescape',
+  'URIError',
+  'valueOf',
+  'WeakMap',
+  'WeakSet',
+].join(',')} }= this;`;
+export const getGlobalContextCode = () => {
+  return globalContextCode;
+};
 /**
  * 收集原生window方法
  */
 const collectNativeWindowFunc = () => {
-  Object.getOwnPropertyNames(window).forEach((key: any) => {
+  const keyList = Object.getOwnPropertyNames(window);
+  for (const key of keyList) {
     if (
       !windowNativeFuncMap.has(key) &&
       key.match(/^[A-Z]/) &&
       typeof window[key] === 'function' &&
-      window[key].toString().includes('[native code]')
+      (window[key] as any).toString().includes('[native code]')
     ) {
       windowNativeFuncMap.set(key, true);
     }
-  });
+  }
 };
 collectNativeWindowFunc();
