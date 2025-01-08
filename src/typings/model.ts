@@ -27,6 +27,7 @@ import type { AppState } from '../common';
 import { WewebCustomAttrs } from '../component/web-compnent';
 import type SandBox from '../context/sandbox';
 import type { EntrySource } from '../entry/entry';
+import type { fetchSource } from '../utils/fetch';
 import type { SourceType } from '../utils/load-source';
 
 export interface IComponentProps {
@@ -120,6 +121,7 @@ export interface BaseModel {
   start(): Promise<void>;
   unmount(needDestroy?: boolean): void;
   url: string;
+  fetchSource?: typeof fetchSource;
 }
 
 export enum WewebMode {

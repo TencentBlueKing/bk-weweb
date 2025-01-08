@@ -44,8 +44,8 @@ export function collectBaseSource() {
     return baseElementInertHandle(this, newChild, refChild, rawHeadInsertBefore);
   };
   window.addEventListener('load', () => {
-    const nodeList: NodeListOf<HTMLStyleElement> = document.head.querySelectorAll('style');
-    nodeList.forEach(node => {
+    const nodeList = document.head.querySelectorAll('style');
+    for (const node of Array.from(nodeList)) {
       node.textContent &&
         appCache.setBaseAppStyle(
           randomUrl(),
@@ -55,6 +55,6 @@ export function collectBaseSource() {
             url: '',
           }),
         );
-    });
+    }
   });
 }

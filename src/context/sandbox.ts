@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/member-ordering */
 /*
  * Tencent is pleased to support the open source community by making
  * 蓝鲸智云PaaS平台 (BlueKing PaaS) available.
@@ -73,14 +75,14 @@ export default class SandBox {
     )}__` as keyof Window;
     this.proxyWindow = new Proxy(this.fakeWindow, {
       // Object.defineProperty(window, key, Descriptor)
-      defineProperty: (target: Window & any, key: PropertyKey, value: PropertyDescriptor): boolean => {
+      defineProperty: (target: Window, key: PropertyKey, value: PropertyDescriptor): boolean => {
         if (windowDescriptorSet.has(key)) {
           return Reflect.defineProperty(rawWindow, key, value);
         }
         return Reflect.defineProperty(target, key, value);
       },
-      deleteProperty: (target: Window & any, key: PropertyKey): boolean => {
-        if (target.hasOwnProperty(key)) {
+      deleteProperty: (target: Window, key: PropertyKey): boolean => {
+        if (Object.hasOwn(target, key)) {
           this.sameRawWindowKeySet.has(key) && this.sameRawWindowKeySet.delete(key);
           this.inRawWindowKeySet.has(key) && Reflect.deleteProperty(rawWindow, key);
           return Reflect.deleteProperty(target, key);
@@ -97,7 +99,7 @@ export default class SandBox {
         }
         if (key === 'eval') {
           app.registerRunningApp();
-
+          // biome-ignore lint/security/noGlobalEval: <explanation>
           return eval;
         }
         if (
@@ -106,10 +108,10 @@ export default class SandBox {
           this.app.iframe &&
           this.app.scopeLocation
         ) {
-          return this.app.iframe.contentWindow?.[key as any];
+          return this.app.iframe.contentWindow?.[key];
         }
         if (key === 'hasOwnProperty')
-          return (key: PropertyKey) => this.fakeWindow.hasOwnProperty(key) || rawWindow.hasOwnProperty(key);
+          return (key: PropertyKey) => Object.hasOwn(this.fakeWindow, key) || Object.hasOwn(rawWindow, key);
         if (key === 'top' || key === 'parent') {
           if (rawWindow === rawWindow.parent) {
             return this.proxyWindow;
@@ -129,10 +131,10 @@ export default class SandBox {
         return bindFunctionToRawWindow(rawWindow, rawValue);
       },
       getOwnPropertyDescriptor: (target: any, key: PropertyKey): PropertyDescriptor | undefined => {
-        if (target.hasOwnProperty(key)) {
+        if (Object.hasOwn(target, key)) {
           return Object.getOwnPropertyDescriptor(target, key);
         }
-        if (rawWindow.hasOwnProperty(key)) {
+        if (Object.hasOwn(rawWindow, key)) {
           windowDescriptorSet.add(key);
           const descriptor = Object.getOwnPropertyDescriptor(rawWindow, key);
           if (descriptor && !descriptor.configurable) {
@@ -162,8 +164,8 @@ export default class SandBox {
           if (key === 'location') {
             Reflect.set(rawWindow, key, value);
           } else if (
-            !target.hasOwnProperty(key) &&
-            rawWindow.hasOwnProperty(key) &&
+            !Object.hasOwn(target, key) &&
+            Object.hasOwn(rawWindow, key) &&
             !BK_WEWEB_INJECT_KEY_LIST.includes(key)
           ) {
             const descriptor = Object.getOwnPropertyDescriptor(rawWindow, key);
@@ -202,7 +204,7 @@ export default class SandBox {
    * @param data data for sandbox
    * @description active hook for sandbox
    */
-  activeated(data?: Record<string, unknown>): void {
+  activated(data?: Record<string, unknown>): void {
     if (!this.active) {
       this.active = true;
       this.rawDocument = createProxyDocument(document, this.app);
@@ -219,7 +221,9 @@ export default class SandBox {
     if (!this.active) return;
     this.active = false;
     this.resetWindowFunction();
-    this.inRawWindowKeySet.forEach((key: PropertyKey) => Reflect.deleteProperty(window, key));
+    for (const key of this.inRawWindowKeySet) {
+      Reflect.deleteProperty(window, key);
+    }
     this.inRawWindowKeySet.clear();
     this.resetDocumentAndBodyEvent?.();
   }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /*
  * Tencent is pleased to support the open source community by making
  * 蓝鲸智云PaaS平台 (BlueKing PaaS) available.
@@ -132,7 +133,12 @@ function isLinkOrScript(node: Node) {
  * @param rawMethod 原始方法
  * @returns 返回原始方法的执行结果
  */
-export function baseElementInertHandle(parent: Node, newChild: Node, passiveChild: Node | null, rawMethod: Function) {
+export function baseElementInertHandle(
+  parent: Node,
+  newChild: Node,
+  passiveChild: Node | null,
+  rawMethod: (...args: any[]) => any,
+) {
   if (isLinkOrScript(newChild)) {
     const targetChild = createNewNode(newChild);
     return rawMethod.call(parent, targetChild, passiveChild);
@@ -145,7 +151,8 @@ export function baseElementInertHandle(parent: Node, newChild: Node, passiveChil
  * @param rawMethod 原始方法
  * @returns 返回原始方法的执行结果
  */
-export function baseElementAppendHandle(parent: Node, newChild: Node, rawMethod: Function) {
+
+export function baseElementAppendHandle(parent: Node, newChild: Node, rawMethod: (...args: any[]) => any) {
   if (isLinkOrScript(newChild)) {
     const targetChild = createNewNode(newChild);
     return rawMethod.call(parent, targetChild);

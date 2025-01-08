@@ -42,6 +42,7 @@ export class Script {
   async = false;
   code = '';
   defer = false;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   exportInstance?: any;
   fromHtml: boolean;
   initial: boolean;
@@ -61,40 +62,45 @@ export class Script {
   }
   /**
    * @param app 应用
-   * @param needRelaceScriptElement 是否需要替换script标签
+   * @param needReplaceScriptElement 是否需要替换script标签
    * @returns 返回执行后的script标签或注释
    */
-  async excuteCode(app: BaseModel, needRelaceScriptElement = false): Promise<Comment | HTMLScriptElement | undefined> {
+  async executeCode(
+    app: BaseModel,
+    needReplaceScriptElement = false,
+  ): Promise<Comment | HTMLScriptElement | undefined> {
     try {
       if (!this.code) await this.getCode(app);
       if (app instanceof MicroInstanceModel) {
-        const golbalWindow = app.scopeJs ? app.sandBox?.proxyWindow || window : window;
-        noteGlobalProps(golbalWindow);
+        const globalWindow = app.scopeJs ? app.sandBox?.proxyWindow || window : window;
+        noteGlobalProps(globalWindow);
       }
       let scopedCode = this.code;
       scopedCode = this.transformCode(app);
       if (app.showSourceCode || this.isModule) {
         const scriptElement = document.createElement('script');
-        if (scriptElement.__BK_WEWEB_APP_KEY__) delete scriptElement.__BK_WEWEB_APP_KEY__;
+        if (scriptElement.__BK_WEWEB_APP_KEY__) {
+          scriptElement.__BK_WEWEB_APP_KEY__ = undefined;
+        }
         app.registerRunningApp();
         this.executeSourceScript(scriptElement, scopedCode);
-        if (needRelaceScriptElement) return scriptElement;
+        if (needReplaceScriptElement) return scriptElement;
         const needKeepAlive = !!app.keepAlive && !(app.container instanceof ShadowRoot);
         const container = needKeepAlive ? document.head : app.container;
         setMarkElement(scriptElement, app, needKeepAlive);
         container!.appendChild(scriptElement);
       } else {
         this.executeMemoryScript(app, scopedCode);
-        if (needRelaceScriptElement) return document.createComment('【bk-weweb】dynamic script');
+        if (needReplaceScriptElement) return document.createComment('【bk-weweb】dynamic script');
       }
       if (app instanceof MicroInstanceModel) {
-        const golbalWindow = app.scopeJs ? app.sandBox?.proxyWindow || window : window;
-        const exportProp: any = getGlobalProp(golbalWindow);
+        const globalWindow = app.scopeJs ? app.sandBox?.proxyWindow || window : window;
+        const exportProp = getGlobalProp(globalWindow);
         if (exportProp) {
-          this.exportInstance = golbalWindow[exportProp];
+          this.exportInstance = globalWindow[exportProp];
           // window 下需清除全局副作用
           if (!app.scopeJs) {
-            delete golbalWindow[exportProp];
+            delete globalWindow[exportProp];
           }
         }
       }
@@ -121,7 +127,7 @@ export class Script {
   // 脚本标签执行
   executeSourceScript(scriptElement: HTMLScriptElement, scopedCode: string): void {
     if (this.isModule) {
-      scriptElement.src = this.url + '?key=' + Date.now()!;
+      scriptElement.src = `${this.url}?key=${Date.now()}`;
       // if (this.url?.match(/\.ts$/)) {
       //   // scriptElement.src = this.url + '?key=' + Date.now()!;
       // } else {
@@ -147,7 +153,7 @@ export class Script {
       code = appCache.getCacheScript(this.url)?.code || '';
     }
     if (!code) {
-      code = await fetchSource(this.url).catch(e => {
+      code = await fetchSource(this.url, {}, app).catch(e => {
         console.error(`fetch script ${this.url} error`, e);
         return '';
       });
@@ -192,8 +198,10 @@ export class Script {
   }
 }
 // 全局属性是否跳过标记
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function shouldSkipProperty(global: Window, p: any) {
   return (
+    // biome-ignore lint/suspicious/noPrototypeBuiltins: <explanation>
     !global.hasOwnProperty(p) ||
     (!Number.isNaN(p) && p < global.length) ||
     (typeof navigator !== 'undefined' &&
@@ -239,13 +247,13 @@ export async function execAppScripts(app: BaseModel) {
   // const appInitialScriptList = Array.from(app.source!.scripts.values()).filter(script => script.initial);
   // // 初始化脚本最先执行
   // if (appInitialScriptList.length) {
-  //   await Promise.all(appInitialScriptList.map(script => script.excuteCode(app)));
+  //   await Promise.all(appInitialScriptList.map(script => script.executeCode(app)));
   // }
   const appScriptList = Array.from(app.source!.scripts.values()).filter(script => script.fromHtml || script.initial);
-  const commomList = appScriptList.filter(script => (!script.async && !script.defer) || script.isModule);
+  const commonList = appScriptList.filter(script => (!script.async && !script.defer) || script.isModule);
   // 保证同步脚本 和 module类型 最先执行
-  await Promise.all(commomList.map(script => script.getCode(app)));
-  await Promise.all(commomList.map(script => script.excuteCode(app)));
+  await Promise.all(commonList.map(script => script.getCode(app)));
+  await Promise.all(commonList.map(script => script.executeCode(app)));
 
   // 最后执行 defer 和 async 脚本
   const deferScriptList: Promise<Comment | HTMLScriptElement | undefined>[] = [];
@@ -254,8 +262,8 @@ export async function execAppScripts(app: BaseModel) {
   for (const script of appScriptList) {
     if (script.defer || script.async) {
       if (!script.code && script.defer) {
-        deferScriptList.push(script.excuteCode(app));
-      } else asyncScriptList.push(script.excuteCode(app));
+        deferScriptList.push(script.executeCode(app));
+      } else asyncScriptList.push(script.executeCode(app));
     }
   }
   await Promise.all([...asyncScriptList, ...deferScriptList]).catch(e => {

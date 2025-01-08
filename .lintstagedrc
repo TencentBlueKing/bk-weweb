@@ -1,5 +1,8 @@
 {
-  "*.{ts,tsx,js,jsx}": ["biome check --write", "eslint --cache --fix"],
+  "*.{ts,tsx,js,jsx}": [
+    "npx biome check --write --files-ignore-unknown=true --no-errors-on-unmatched --colors=force --max-diagnostics=1000 --diagnostic-level=warn",
+    "npx eslint --cache --fix"
+  ],
   "*.{json,css}": ["biome check --write"],
   "*.{md,yml}": ["prettier --ignore-unknown --write"]
 }

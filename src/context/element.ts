@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /*
  * Tencent is pleased to support the open source community by making
  * 蓝鲸智云PaaS平台 (BlueKing PaaS) available.
@@ -25,7 +26,7 @@
  */
 import { appCache } from '../cache/app-cache';
 import { fillUpPath } from '../utils/common';
-import { elementInsertHandler, elmentAppendHandler, isSepcailElement } from '../utils/element';
+import { elementInsertHandler, elementAppendHandler, isSpecialElement } from '../utils/element';
 import { setCurrentRunningApp } from './cache';
 
 const { setAttribute } = Element.prototype;
@@ -60,16 +61,17 @@ export function rewriteBodyAndHeaderMethods(): void {
     }
   };
   HTMLBodyElement.prototype.appendChild = function appendChildNew<T extends Node>(newChild: T): T {
-    if (newChild.__KEEP_ALIVE__ && isSepcailElement(newChild)) return (headAppendChild as any).call(rawHead, newChild);
-    return elmentAppendHandler(this, newChild, bodyAppendChild);
+    if (newChild.__KEEP_ALIVE__ && isSpecialElement(newChild)) return (headAppendChild as any).call(rawHead, newChild);
+    return elementAppendHandler(this, newChild, bodyAppendChild);
   };
   HTMLBodyElement.prototype.append = function <T extends Node>(...nodes: T[]): void {
+    // biome-ignore lint/complexity/noForEach: <explanation>
     nodes.forEach(node => {
       // keepalive link script style set in head
-      if (node.__KEEP_ALIVE__ && isSepcailElement(node)) {
+      if (node.__KEEP_ALIVE__ && isSpecialElement(node)) {
         return (headAppendChild as any).call(rawHead, node);
       }
-      elmentAppendHandler(this, node as Node, bodyAppendChild);
+      elementAppendHandler(this, node as Node, bodyAppendChild);
     });
   };
   HTMLHeadElement.prototype.appendChild = HTMLBodyElement.prototype.appendChild;

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/member-ordering */
 /*
  * Tencent is pleased to support the open source community by making
  * 蓝鲸智云PaaS平台 (BlueKing PaaS) available.
@@ -78,11 +79,13 @@ export class MicroAppModel implements BaseModel {
   activated(container: HTMLElement | ShadowRoot, callback?: (app: BaseModel) => void) {
     this.isPreLoad = false;
     this.state = AppState.ACTIVATED;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const app = this;
     if (container && this.container) {
       if (container instanceof Element) container!.setAttribute(CSS_ATTRIBUTE_KEY, this.name);
       const fragment = document.createDocumentFragment();
-      Array.from(this.container.childNodes).forEach((node: Element | Node) => {
+      const list = Array.from(this.container.childNodes);
+      for (const node of list) {
         node.__BK_WEWEB_APP_KEY__ = this.appCacheKey;
         Object.defineProperties(node, {
           ownerDocument: {
@@ -92,12 +95,12 @@ export class MicroAppModel implements BaseModel {
           },
         });
         fragment.appendChild(node);
-      });
+      }
       container.innerHTML = '';
       container.appendChild(fragment);
       this.container = container;
       this.initShadowRootContainer();
-      this.sandBox?.activeated(this.data);
+      this.sandBox?.activated(this.data);
       callback?.(this);
     }
   }
@@ -149,12 +152,13 @@ export class MicroAppModel implements BaseModel {
     this.container = container ?? this.container!;
     this.initShadowRootContainer();
     this.state = AppState.MOUNTING;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const app = this;
     if (this.container) {
       if (this.container instanceof Element) this.container!.setAttribute(CSS_ATTRIBUTE_KEY, this.name);
       const clonedNode = this.source!.html!.cloneNode(true);
       const fragment = document.createDocumentFragment();
-      Array.from(clonedNode.childNodes).forEach((node: Element | Node) => {
+      for (const node of Array.from(clonedNode.childNodes)) {
         node.__BK_WEWEB_APP_KEY__ = this.appCacheKey;
         Object.defineProperties(node, {
           ownerDocument: {
@@ -164,10 +168,10 @@ export class MicroAppModel implements BaseModel {
           },
         });
         fragment.appendChild(node);
-      });
+      }
       this.container.innerHTML = '';
       this.container.appendChild(fragment);
-      this.sandBox?.activeated(this.data);
+      this.sandBox?.activated(this.data);
       execAppScripts(this).finally(() => {
         this.state = AppState.MOUNTED;
         callback?.(this);
@@ -194,7 +198,7 @@ export class MicroAppModel implements BaseModel {
         this.iframe = iframe;
       }
       this.source = new EntrySource(this.url);
-      await this.source.importEntery(this);
+      await this.source.importEntry(this);
     }
   }
   unmount(needDestroy = false): void {

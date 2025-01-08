@@ -25,7 +25,12 @@
  */
 import weWeb from '..';
 
-export function fetchSource(url: string, options = {}): Promise<string> {
+import type { BaseModel } from '../typings';
+
+export function fetchSource(url: string, options = {}, app?: BaseModel): Promise<string> {
+  if (typeof app?.fetchSource === 'function') {
+    return app.fetchSource(url, options).catch(() => '');
+  }
   if (weWeb.fetchSource) {
     return weWeb.fetchSource(url, options);
   }

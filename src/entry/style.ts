@@ -57,7 +57,7 @@ export class Style {
   commonScoped(styleElement: HTMLStyleElement, app: BaseModel) {
     if (app.scopeCss && !(app.container instanceof ShadowRoot)) {
       const cssStyleSheet = new CSSStyleSheet({ disabled: true });
-      (cssStyleSheet as any).replaceSync(styleElement.textContent || this.code);
+      cssStyleSheet.replaceSync(styleElement.textContent || this.code);
       const rules: CSSRule[] = Array.from(cssStyleSheet?.cssRules ?? []);
       const cssPrefix = `#${app.name}`;
       const scopedCss = this.scopeRule(rules, cssPrefix);
@@ -87,14 +87,16 @@ export class Style {
   }
   createStyleElement() {
     const styleElement = document.createElement('style');
-    if (styleElement.__BK_WEWEB_APP_KEY__) delete styleElement.__BK_WEWEB_APP_KEY__;
+    if (styleElement.__BK_WEWEB_APP_KEY__) {
+      styleElement.__BK_WEWEB_APP_KEY__ = undefined;
+    }
     return styleElement;
   }
   /**
    * @param app 应用实例
    * @returns 返回执行后的style标签
    */
-  async excuteCode(app: BaseModel): Promise<HTMLStyleElement> {
+  async executeCode(app: BaseModel): Promise<HTMLStyleElement> {
     app.registerRunningApp();
     let styleElement = this.createStyleElement();
     styleElement.setAttribute('type', 'text/css');
@@ -121,7 +123,7 @@ export class Style {
       code = style?.code || '';
     }
     if (!code) {
-      code = await fetchSource(this.url).catch(() => '');
+      code = await fetchSource(this.url, {}, app).catch(() => '');
     }
     this.code = code;
     return code;
@@ -144,13 +146,14 @@ export class Style {
     const result = this.scopeRule(Array.from(rule.cssRules), prefix);
     return `@${packName} ${rule.conditionText} {${result}}`;
   }
-  resetUrlHost(cssText: string, baseURI: string, linkpath?: string) {
+  resetUrlHost(cssText: string, uri: string, linkPath?: string) {
+    let baseURI = uri;
     return cssText.replace(/url\(["']?([^)"']+)["']?\)/gm, (text, $1) => {
       if (/^(data|blob):/.test($1) || /^(https?:)?\/\//.test($1)) {
         return text;
       }
-      if (/^((\.\.?\/)|[^/])/.test($1) && linkpath) {
-        const pathArr = linkpath.split('/');
+      if (/^((\.\.?\/)|[^/])/.test($1) && linkPath) {
+        const pathArr = linkPath.split('/');
         pathArr.pop();
         baseURI = addUrlProtocol(`${pathArr.join('/')}/`);
       }
@@ -262,18 +265,18 @@ export class Style {
   }
 }
 
-export async function excuteAppStyles(app: BaseModel, container?: Element | ShadowRoot) {
+export async function executeAppStyles(app: BaseModel, container?: Element | ShadowRoot) {
   const styleList: Style[] = Array.from(app.source!.styles.values());
   const promiseList: Promise<HTMLStyleElement>[] = [];
-  styleList.forEach(style => {
-    promiseList.push(style.excuteCode(app));
-  });
+  for (const style of styleList) {
+    promiseList.push(style.executeCode(app));
+  }
   await Promise.all(promiseList).then((styleElementList: HTMLStyleElement[]) => {
-    const parentElemnt = container || app.container;
-    if (app.keepAlive && !(parentElemnt instanceof ShadowRoot)) {
+    const parentElement = container || app.container;
+    if (app.keepAlive && !(parentElement instanceof ShadowRoot)) {
       document.head.append(...styleElementList);
     } else {
-      parentElemnt?.append(...styleElementList);
+      parentElement?.append(...styleElementList);
     }
   });
 }

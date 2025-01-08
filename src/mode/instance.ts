@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/member-ordering */
 /*
  * Tencent is pleased to support the open source community by making
  * 蓝鲸智云PaaS平台 (BlueKing PaaS) available.
@@ -29,10 +30,11 @@ import { setCurrentRunningApp } from '../context/cache';
 import SandBox from '../context/sandbox';
 import { EntrySource } from '../entry/entry';
 import { execAppScripts } from '../entry/script';
-import { excuteAppStyles } from '../entry/style';
+import { executeAppStyles } from '../entry/style';
 import { type BaseModel, CSS_ATTRIBUTE_KEY, type IJsModelProps } from '../typings';
 import { random } from '../utils/common';
 
+import type { fetchSource } from '../utils/fetch';
 import type { SourceType } from '../utils/load-source';
 // bk-kweweb 微模块模式
 export class MicroInstanceModel implements BaseModel {
@@ -50,7 +52,8 @@ export class MicroInstanceModel implements BaseModel {
   showSourceCode = true; // 是否显示源码
   source?: EntrySource; // 入口资源
   url: string; // url
-  constructor(props: IJsModelProps) {
+  fetchSource?: typeof fetchSource;
+  constructor(props: IJsModelProps & { fetchSource?: typeof fetchSource }) {
     this.name = props.id !== props.url ? props.id! : random(5);
     this.appCacheKey = props.id || this.name;
     this.url = props.url;
@@ -65,6 +68,7 @@ export class MicroInstanceModel implements BaseModel {
     if (this.scopeJs) {
       this.sandBox = new SandBox(this);
     }
+    this.fetchSource = props.fetchSource;
   }
   activated<T>(
     container: HTMLElement | ShadowRoot,
@@ -75,12 +79,12 @@ export class MicroInstanceModel implements BaseModel {
     if (this.container && container) {
       if (container instanceof Element) container?.setAttribute(CSS_ATTRIBUTE_KEY, this.name);
       const fragment = document.createDocumentFragment();
-      Array.from(this.container.childNodes).forEach((node: Element | Node) => {
+      for (const node of Array.from(this.container.childNodes)) {
         fragment.appendChild(node);
-      });
+      }
       container.appendChild(fragment);
       this.container = container;
-      this.sandBox?.activeated();
+      this.sandBox?.activated();
       const scriptInfo = this.source?.getScript(this.url);
       callback?.(this, scriptInfo?.exportInstance);
     }
@@ -97,17 +101,17 @@ export class MicroInstanceModel implements BaseModel {
     this.container = container ?? this.container!;
     this.state = AppState.MOUNTING;
     if (this.container instanceof HTMLElement) {
-      this.container!.setAttribute(CSS_ATTRIBUTE_KEY, this.name);
+      this.container?.setAttribute(CSS_ATTRIBUTE_KEY, this.name);
     }
     this.container.innerHTML = '';
     const instanceWrap = document.createElement('div');
     const wrapId = `${this.name}-wrapper`;
     instanceWrap.setAttribute('id', wrapId);
     if (this.source?.styles.size) {
-      excuteAppStyles(this, this.container);
+      executeAppStyles(this, this.container);
     }
     this.container.appendChild(instanceWrap);
-    this.sandBox?.activeated();
+    this.sandBox?.activated();
     execAppScripts(this).finally(() => {
       this.state = AppState.MOUNTED;
       const scriptInfo = this.source?.getScript(this.url);
@@ -132,7 +136,7 @@ export class MicroInstanceModel implements BaseModel {
   async start(): Promise<void> {
     if (!this.source || [AppState.ERROR, AppState.UNSET].includes(this.status)) {
       this.source = new EntrySource(this.url);
-      await this.source.importEntery(this);
+      await this.source.importEntry(this);
     }
   }
   unmount(needDestroy?: boolean): void {

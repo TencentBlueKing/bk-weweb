@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 /*
  * Tencent is pleased to support the open source community by making
  * 蓝鲸智云PaaS平台 (BlueKing PaaS) available.
@@ -38,7 +39,7 @@ export function resetNewElement(parent: Node, child: Node, app: BaseModel): Node
       return document.createComment('【bk-weweb】style with exclude attribute is ignored');
     }
     if (child.textContent) {
-      // 父级应用样式已生效情况下 即可忽略子应用对应样式 webcomponent的隔离下优化不生效
+      // 父级应用样式已生效情况下 即可忽略子应用对应样式 web component的隔离下优化不生效
       if (!(app.container instanceof ShadowRoot) && appCache.getBaseAppStyle(child.textContent)) {
         return document.createComment('【bk-weweb】style is effective in base app');
       }
@@ -87,7 +88,7 @@ export function resetNewElement(parent: Node, child: Node, app: BaseModel): Node
       return child;
     }
     if (replaceInfo.script) {
-      replaceInfo.script.excuteCode(app);
+      replaceInfo.script.executeCode(app);
     }
     if (replaceInfo.replace !== child) {
       return replaceInfo.replace;
@@ -106,7 +107,7 @@ export function resetNewElement(parent: Node, child: Node, app: BaseModel): Node
             return;
           }
           if (scriptInfo?.script) {
-            scriptInfo.script.excuteCode(app);
+            scriptInfo.script.executeCode(app);
           }
           child.remove();
         } else if (child.textContent) {
@@ -120,7 +121,7 @@ export function resetNewElement(parent: Node, child: Node, app: BaseModel): Node
           });
           app.source!.scripts.set(randomUrl(), scriptInstance);
           try {
-            scriptInstance.excuteCode(app);
+            scriptInstance.executeCode(app);
           } catch (e) {
             console.error(e);
           } finally {
@@ -136,15 +137,16 @@ export function resetNewElement(parent: Node, child: Node, app: BaseModel): Node
   }
   return child;
 }
-export function isSepcailElement(node: Node) {
+export function isSpecialElement(node: Node) {
   return node instanceof HTMLScriptElement || node instanceof HTMLStyleElement || node instanceof HTMLLinkElement;
 }
-export function elmentAppendHandler(parent: Node, newChild: Node, rawMethod: Function) {
+// biome-ignore lint/complexity/noBannedTypes: <explanation>
+export function elementAppendHandler(parent: Node, newChild: Node, rawMethod: Function) {
   if (newChild.__BK_WEWEB_APP_KEY__) {
     const app = appCache.getApp(newChild.__BK_WEWEB_APP_KEY__);
     if (app?.container) {
       const targetChild = resetNewElement(parent, newChild, app);
-      const needKeepAlive = isSepcailElement(newChild) && !!app.keepAlive && !(app.container instanceof ShadowRoot);
+      const needKeepAlive = isSpecialElement(newChild) && !!app.keepAlive && !(app.container instanceof ShadowRoot);
       const container = needKeepAlive ? document.head : app?.container;
       setMarkElement(targetChild as Element, app, needKeepAlive);
       return rawMethod.call(container, targetChild);
@@ -152,11 +154,12 @@ export function elmentAppendHandler(parent: Node, newChild: Node, rawMethod: Fun
   }
   return rawMethod.call(parent, newChild);
 }
+// biome-ignore lint/complexity/noBannedTypes: <explanation>
 export function elementInsertHandler(parent: Node, newChild: Node, passiveChild: Node | null, rawMethod: Function) {
   if (newChild.__BK_WEWEB_APP_KEY__) {
     const app = appCache.getApp(newChild.__BK_WEWEB_APP_KEY__!);
     if (app?.container) {
-      const needKeepAlive = isSepcailElement(newChild) && app.keepAlive && !(app.container instanceof ShadowRoot);
+      const needKeepAlive = isSpecialElement(newChild) && app.keepAlive && !(app.container instanceof ShadowRoot);
       const container = needKeepAlive ? document.head : app?.container;
       const targetChild = resetNewElement(parent, newChild, app);
       if (needKeepAlive) {

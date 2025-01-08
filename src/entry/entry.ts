@@ -30,7 +30,7 @@ import { addUrlProtocol, fillUpPath, isJsonpUrl, randomUrl } from '../utils/comm
 import { fetchSource } from '../utils/fetch';
 import { collectSource } from '../utils/load-source';
 import { Script } from './script';
-import { Style, excuteAppStyles } from './style';
+import { Style, executeAppStyles } from './style';
 
 import type { BaseModel, IScriptOption } from '../typings';
 
@@ -63,7 +63,7 @@ export class EntrySource {
     }
     const rel = link.getAttribute('rel');
     let href = link.getAttribute('href');
-    let replaceElement;
+    let replaceElement: Comment;
     if (rel === 'stylesheet' && href) {
       href = fillUpPath(href, this.url);
       replaceElement = document.createComment(`【bk-weweb】style with href=${href}`);
@@ -143,7 +143,7 @@ export class EntrySource {
         url: nonceStr!,
       });
       this.scripts.set(nonceStr, scriptInstance);
-      replaceElement = document.createComment('【bk-weweb】script with texcontent');
+      replaceElement = document.createComment('【bk-weweb】script with text content');
       !needReplaceELement && parent.replaceChild(replaceElement, script);
       return {
         replace: replaceElement,
@@ -154,11 +154,11 @@ export class EntrySource {
   }
   collectScriptAndStyle(parent: HTMLElement): void {
     const links = Array.from(parent.querySelectorAll('link'));
-    links?.forEach(link => {
+    for (const link of links || []) {
       this.collectLink(link, link.parentElement!);
-    });
+    }
     const styles = Array.from(parent.querySelectorAll('style'));
-    styles?.forEach(style => {
+    for (const style of styles || []) {
       if (!style.hasAttribute('exclude') && !style.hasAttribute('ignore')) {
         this.styles.set(
           randomUrl(),
@@ -170,21 +170,21 @@ export class EntrySource {
         );
         style.remove();
       }
-    });
+    }
     const scripts = Array.from(parent.querySelectorAll('script'));
-    scripts?.forEach(script => {
+    for (const script of scripts) {
       this.collectScript(script, script.parentElement!);
-    });
+    }
     const metas = Array.from(parent.querySelectorAll('meta'));
-    metas?.forEach(meta => {
+    for (const meta of metas) {
       meta.parentElement!.removeChild(meta);
-    });
+    }
     const imgs = Array.from(parent.querySelectorAll('img'));
-    imgs?.forEach(img => {
+    for (const img of imgs) {
       if (img.hasAttribute('src')) {
         img.setAttribute('src', fillUpPath(img.getAttribute('src')!, this.url));
       }
-    });
+    }
     // const children = Array.from(parent.children);
     // children?.forEach(dom => {
     //   if (dom instanceof HTMLLinkElement) {
@@ -220,7 +220,7 @@ export class EntrySource {
   getStyle(urlOrCode: string) {
     return this.styles.get(urlOrCode) || Array.from(this.styles.values()).find(style => style.code === urlOrCode);
   }
-  async importEntery(app: BaseModel): Promise<void> {
+  async importEntry(app: BaseModel): Promise<void> {
     if (app.initSource?.length) {
       // 初始化配置的公共source资源
       const { collectScript, collectStyle } = await collectSource(app.initSource);
@@ -232,32 +232,34 @@ export class EntrySource {
       }
     }
     if (app instanceof MicroAppModel) await this.importHtmlEntry(app);
-    else if (app instanceof MicroInstanceModel) await this.importInstanceEntry();
+    else if (app instanceof MicroInstanceModel) await this.importInstanceEntry(app);
   }
   async importHtmlEntry(app: MicroAppModel): Promise<void> {
     let htmlStr = appCache.getCacheHtml(this.url);
     if (!htmlStr) {
-      htmlStr = await fetchSource(addUrlProtocol(this.url), { cache: 'no-cache' });
+      htmlStr = await fetchSource(addUrlProtocol(this.url), { cache: 'no-cache' }, app);
       if (!htmlStr) {
-        console.error('load app entry error, pleace check');
+        console.error('load app entry error, place check');
         return Promise.reject();
       }
     }
     this.rawHtml = htmlStr;
     const wrapElement = document.createElement('div');
-    if (wrapElement.__BK_WEWEB_APP_KEY__) delete wrapElement.__BK_WEWEB_APP_KEY__;
+    if (wrapElement.__BK_WEWEB_APP_KEY__) {
+      wrapElement.__BK_WEWEB_APP_KEY__ = undefined;
+    }
     wrapElement.innerHTML = htmlStr.replace(/<\/?head>/gim, '').replace(/<\/?body>/i, '');
     this.collectScriptAndStyle(wrapElement);
-    await excuteAppStyles(app, wrapElement);
+    await executeAppStyles(app, wrapElement);
     this.html = wrapElement;
   }
-  async importInstanceEntry(): Promise<void> {
+  async importInstanceEntry(app: BaseModel): Promise<void> {
     let jsStr = appCache.getCacheScript(this.url)?.code;
     if (!jsStr) {
-      jsStr = await fetchSource(this.url, { cache: 'no-cache' });
+      jsStr = await fetchSource(this.url, { cache: 'no-cache' }, app);
     }
     if (!jsStr) {
-      console.error('load app entry error, pleace check');
+      console.error('load app entry error, place check');
       return Promise.reject();
     }
     this.scripts.set(
