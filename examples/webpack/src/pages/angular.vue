@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>这个是 React 应用</h1>
+    <h1>这个是 Angular 应用</h1>
     <customApp
       id="angular"
       :show-source-code="false"
