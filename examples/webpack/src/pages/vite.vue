@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="common-app">
     <h1>这个是 Vite 应用</h1>
     <customApp
       id="vite"

@@ -29,8 +29,8 @@
     "dev:react": "cd examples/children/react && yarn start",
     "dev:vue2": "cd examples/children/vue2 && yarn start",
     "dev:vue3": "cd examples/children/vue3 && yarn start",
-    "devd:angular": "cd examples/children/angular && yarn start",
-    "devd:vite": "cd examples/children/vite && yarn start",
+    "dev:angular": "cd examples/children/angular && yarn start",
+    "dev:vite": "cd examples/children/vite && yarn start",
     "dev:instance": "cd examples/children/instance && yarn start"
   },
   "publishConfig": {

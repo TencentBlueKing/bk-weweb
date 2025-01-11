@@ -18,8 +18,8 @@
           <bk-menu-item key="vue3">vue3应用</bk-menu-item>
           <bk-menu-item key="vue2">vue2应用</bk-menu-item>
           <bk-menu-item key="shadowDom">shadowDom应用</bk-menu-item>
-          <!-- <Menu.Item key="vite">vite</Menu.Item>
-          <Menu.Item key="angular">angular</Menu.Item> -->
+          <bk-menu-item key="vite">vite</bk-menu-item>
+          <bk-menu-item key="angular">angular</bk-menu-item>
         </bk-menu>
       </template>
       <div class="route-wrapper">
