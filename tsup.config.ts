@@ -25,13 +25,13 @@
  */
 import { defineConfig } from 'tsup';
 export default defineConfig({
-  entry: ['src/index.ts', 'src/base-app/collect-source.ts'],
+  entry: ['src/index.ts'],
   format: ['esm'],
   dts: true,
   splitting: false,
   sourcemap: true,
   clean: true,
-  minify: false,
+  minify: true,
   outExtension({ format }) {
     return {
       js: `.${format}.js`,
