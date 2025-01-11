@@ -1,11 +1,12 @@
 {
   "name": "@blueking/bk-weweb",
-  "version": "0.0.29-beta.1",
+  "version": "0.0.30",
   "description": "bk micro frontend web",
   "private": false,
   "main": "dist/index.esm.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.mts",
+  "homepage": "https://github.com/TencentBlueKing/bk-weweb",
   "scripts": {
     "prepublishOnly": "run-s build",
     "start": "run-p dev:*",

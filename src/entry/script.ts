@@ -167,26 +167,30 @@ export class Script {
   }
   // 转换脚本内容
   transformCode(app: BaseModel): string {
+    const sourceMapUrl = this.url ? `//# sourceURL=${this.url}\n` : '';
     if (app.sandBox) {
       if (this.isModule) {
         return ` with(window.${app.sandBox.windowSymbolKey}){
           ;${this.code}\n
+          ${sourceMapUrl}
         }`;
       }
       if (app.showSourceCode) {
         return `;(function(window, self, globalThis){
-          with(window){
-            ${getGlobalContextCode()}\n
-            ${this.code}\n
-          }
-        }).call(window.${app.sandBox.windowSymbolKey},
-           window.${app.sandBox.windowSymbolKey}, window.${app.sandBox.windowSymbolKey}, window.${app.sandBox.windowSymbolKey});`;
+                  with(window){
+                    ${getGlobalContextCode()}\n
+                    ${this.code}\n
+                    ${sourceMapUrl}
+                  }
+                }).call(window.${app.sandBox.windowSymbolKey},
+                  window.${app.sandBox.windowSymbolKey}, window.${app.sandBox.windowSymbolKey}, window.${app.sandBox.windowSymbolKey});`;
       }
       return `
           with(window) {
             try {
               ${getGlobalContextCode()}\n
-                ${this.code}
+                ${this.code}\n
+                ${sourceMapUrl}
               }
               catch(e) {
                 console.error(e)

@@ -9,4 +9,8 @@ module.exports = defineConfig({
     host: 'localhost',
   },
   transpileDependencies: true,
+  chainWebpack: config => {
+    // 移除类型检查插件
+    config.plugins.delete('fork-ts-checker');
+  },
 });
