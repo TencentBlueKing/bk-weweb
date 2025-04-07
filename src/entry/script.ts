@@ -167,7 +167,8 @@ export class Script {
   }
   // 转换脚本内容
   transformCode(app: BaseModel): string {
-    const sourceMapUrl = this.url ? `//# sourceURL=${this.url}\n` : '';
+    // const sourceMapUrl = this.url ? `//# sourceURL=${this.url}\n` : '';
+    const sourceMapUrl = '';
     if (app.sandBox) {
       if (this.isModule) {
         return ` with(window.${app.sandBox.windowSymbolKey}){

@@ -69,9 +69,9 @@ export class Style {
       // fix https://bugs.chromium.org/p/chromium/issues/detail?id=336876
       if (cssText && app.container instanceof ShadowRoot) {
         let fontContent = '';
-        cssText.match(/@font-face\s*\{[^}]+\}/g)?.forEach(fontFace => {
+        for (const fontFace of cssText.match(/@font-face\s*\{[^}]+\}/g) || []) {
           fontContent += `${fontFace}\n`;
-        });
+        }
         const rawDocument = app.sandBox?.rawDocument;
         if (rawDocument && fontContent) {
           const fontStyle = rawDocument.createElement('style');
@@ -81,7 +81,7 @@ export class Style {
           rawDocument?.head?.append(fontStyle);
         }
       }
-      styleElement.textContent = cssText;
+      styleElement.textContent = cssText.replace(/(:?:root|html)/gm, ':host');
     }
     this.scoped = true;
   }
