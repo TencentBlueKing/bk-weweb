@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/member-ordering */
 /*
  * Tencent is pleased to support the open source community by making
  * 蓝鲸智云PaaS平台 (BlueKing PaaS) available.
@@ -24,39 +23,59 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
+/* eslint-disable @typescript-eslint/member-ordering */
+
 import { appCache } from '../cache/app-cache';
-import { AppState } from '../common';
+import { AppState, type ValueOfAppState } from '../common';
 import { setCurrentRunningApp } from '../context/cache';
 import SandBox from '../context/sandbox';
 import { EntrySource } from '../entry/entry';
 import { execAppScripts } from '../entry/script';
-import { type BaseModel, CSS_ATTRIBUTE_KEY, type IAppModleProps, WewebMode } from '../typings';
+import {
+  type BaseModel,
+  type CallbackFunction,
+  type ContainerType,
+  CSS_ATTRIBUTE_KEY,
+  type IAppModelProps,
+  WewebMode,
+} from '../typings';
 import { addUrlProtocol, random } from '../utils/common';
 
 import type { SourceType } from '../utils/load-source';
 
-const BLANK_ORIGN = 'about:blank';
-// bk-weweb 微应用模式
+const IFRAME_CONSTANTS = {
+  BLANK_ORIGIN: 'about:blank',
+  STYLE_HIDDEN: 'display: none;',
+  CHROME_USER_AGENT: 'Chrome',
+  DEFAULT_HTML: '<head></head><body></body>',
+  POLLING_INTERVAL: 0,
+} as const;
+
+const DEFAULT_RANDOM_LENGTH = 5;
+
+/** BK-WEWEB 微应用模式类 */
 export class MicroAppModel implements BaseModel {
-  private state: AppState = AppState.UNSET; // 状态
-  container?: HTMLElement | ShadowRoot; // 容器
-  public data: Record<string, unknown>; // 数据
-  iframe: HTMLIFrameElement | null = null; // scoped iframe
-  initSource: SourceType; // 初始资源
-  isModuleApp = false; // 是否预加载
-  public isPreLoad = false; // 是否缓存
+  private state: ValueOfAppState = AppState.UNSET;
+
+  container?: ContainerType;
+  data: Record<string, unknown>;
+  iframe: HTMLIFrameElement | null = null;
+  initSource: SourceType;
+  isModuleApp = false;
+  isPreLoad = false;
   keepAlive: boolean;
-  mode: WewebMode = WewebMode.APP; // 名称
-  name: string; // 沙箱
-  sandBox?: SandBox; // 是否隔离样式
-  scopeCss: boolean; // 是否隔离js
-  scopeJs: boolean; // 是否隔离location
-  scopeLocation: boolean; // 是否显示源码
-  showSourceCode: boolean; // 入口资源
-  source?: EntrySource; // url
-  url: string; // 是否是esm应用
-  constructor(props: IAppModleProps) {
-    this.name = props.id !== props.url ? props.id! : random(5);
+  mode: WewebMode = WewebMode.APP;
+  name: string;
+  sandBox?: SandBox;
+  scopeCss: boolean;
+  scopeJs: boolean;
+  scopeLocation: boolean;
+  showSourceCode: boolean;
+  source?: EntrySource;
+  url: string;
+
+  constructor(props: IAppModelProps) {
+    this.name = props.id !== props.url ? props.id || random(DEFAULT_RANDOM_LENGTH) : random(DEFAULT_RANDOM_LENGTH);
     this.mode = props.mode ?? WewebMode.APP;
     this.container = props.container ?? undefined;
     this.showSourceCode = props.showSourceCode ?? false;
@@ -68,74 +87,48 @@ export class MicroAppModel implements BaseModel {
     this.isPreLoad = props.isPreLoad ?? false;
     this.keepAlive = props.keepAlive ?? false;
     this.initSource = props.initSource ?? [];
-    if (this.scopeJs) {
-      this.sandBox = new SandBox(this);
-    }
-    if (this.container instanceof HTMLElement) {
-      this.container.setAttribute(CSS_ATTRIBUTE_KEY, this.name);
-    }
+
+    this.initializeSandBox();
+    this.setContainerAttribute();
   }
-  // 激活
-  activated(container: HTMLElement | ShadowRoot, callback?: (app: BaseModel) => void) {
+
+  /** 激活微应用 */
+  activated<T = unknown>(container: ContainerType, callback?: CallbackFunction<T>): void {
     this.isPreLoad = false;
     this.state = AppState.ACTIVATED;
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const app = this;
+
     if (container && this.container) {
-      if (container instanceof Element) container!.setAttribute(CSS_ATTRIBUTE_KEY, this.name);
-      const fragment = document.createDocumentFragment();
-      const list = Array.from(this.container.childNodes);
-      for (const node of list) {
-        node.__BK_WEWEB_APP_KEY__ = this.appCacheKey;
-        Object.defineProperties(node, {
-          ownerDocument: {
-            get() {
-              return app.sandBox?.rawDocument;
-            },
-          },
-        });
-        fragment.appendChild(node);
-      }
-      container.innerHTML = '';
-      container.appendChild(fragment);
+      this.setContainerAttribute(container);
+      this.transferNodes(container);
       this.container = container;
       this.initShadowRootContainer();
       this.sandBox?.activated(this.data);
       callback?.(this);
     }
   }
-  // 创建隔离iframe
+
+  /** 创建隔离iframe */
   createIframe(): Promise<HTMLIFrameElement> {
     return new Promise(resolve => {
-      const iframe = document.createElement('iframe');
-      const url = new URL(addUrlProtocol(this.url));
-      const isChrome = navigator.userAgent.indexOf('Chrome') > -1;
-      iframe.setAttribute(
-        'src',
-        `${isChrome ? BLANK_ORIGN : location.origin}${url.pathname || '/'}${url.search}${url.hash}`,
-      );
-      iframe.style.cssText = 'display: none;';
+      const iframe = this.createIframeElement();
       document.body.appendChild(iframe);
-      if (isChrome) {
-        setTimeout(() => resolve(iframe), 0);
+
+      if (this.isChromeUserAgent()) {
+        setTimeout(() => resolve(iframe), IFRAME_CONSTANTS.POLLING_INTERVAL);
       } else {
-        // 其他浏览器在about:blank下会出现同源检测安全错误 换另一种方式来做location保持
-        const interval = setInterval(() => {
-          if (iframe.contentWindow && iframe.contentWindow.location.href !== BLANK_ORIGN) {
-            iframe.contentWindow!.stop();
-            iframe.contentDocument!.body.parentElement!.innerHTML = '<head></head><body></body>';
-            clearInterval(interval);
-            resolve(iframe);
-          }
-        }, 0);
+        this.handleNonChromeIframe(iframe, resolve);
       }
     });
   }
-  deactivated() {
+
+  /** 停用微应用 */
+  deactivated(): void {
     this.state = AppState.DEACTIVATED;
     this.sandBox?.deactivated();
   }
-  initShadowRootContainer() {
+
+  /** 初始化ShadowRoot容器 */
+  initShadowRootContainer(): void {
     if (this.container instanceof ShadowRoot) {
       // inject echarts in shadowRoot
       Object.defineProperties(this.container, {
@@ -147,79 +140,180 @@ export class MicroAppModel implements BaseModel {
       });
     }
   }
-  mount(container?: HTMLElement | ShadowRoot, callback?: (app: BaseModel) => void): void {
+
+  /** 挂载微应用 */
+  mount<T = unknown>(container?: ContainerType, callback?: CallbackFunction<T>): void {
     this.isPreLoad = false;
-    this.container = container ?? this.container!;
+    this.container = container ?? this.container;
     this.initShadowRootContainer();
     this.state = AppState.MOUNTING;
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const app = this;
+
     if (this.container) {
-      if (this.container instanceof Element) this.container!.setAttribute(CSS_ATTRIBUTE_KEY, this.name);
-      const clonedNode = this.source!.html!.cloneNode(true);
-      const fragment = document.createDocumentFragment();
-      for (const node of Array.from(clonedNode.childNodes)) {
-        node.__BK_WEWEB_APP_KEY__ = this.appCacheKey;
-        Object.defineProperties(node, {
-          ownerDocument: {
-            get() {
-              return app.sandBox?.rawDocument;
-            },
-          },
-        });
-        fragment.appendChild(node);
-      }
-      this.container.innerHTML = '';
-      this.container.appendChild(fragment);
+      this.setContainerAttribute(this.container);
+      this.renderAppContent();
       this.sandBox?.activated(this.data);
+
       execAppScripts(this).finally(() => {
         this.state = AppState.MOUNTED;
         callback?.(this);
       });
     }
   }
+
+  /** 错误处理 */
   onError(): void {
     this.state = AppState.ERROR;
   }
+
+  /** 挂载处理 */
   onMount(): void {
     if (this.isPreLoad) return;
     this.state = AppState.LOADED;
     this.mount();
   }
-  registerRunningApp() {
+
+  /** 注册运行中的微应用 */
+  registerRunningApp(): void {
     setCurrentRunningApp(this);
     Promise.resolve().then(() => setCurrentRunningApp(null));
   }
-  async start() {
-    if (!this.source || [AppState.ERROR, AppState.UNSET].includes(this.status)) {
+
+  /** 启动微应用 */
+  async start(): Promise<void> {
+    if (!this.source || this.needsReload()) {
       this.state = AppState.LOADING;
+
       if (this.scopeLocation || this.isModuleApp) {
         const iframe = await this.createIframe();
         this.iframe = iframe;
       }
+
       this.source = new EntrySource(this.url);
       await this.source.importEntry(this);
     }
   }
+
+  /** 卸载微应用 */
   unmount(needDestroy = false): void {
     this.state = AppState.UNMOUNT;
     this.sandBox?.deactivated();
-    needDestroy && appCache.deleteApp(this.url);
-    this.container!.innerHTML = '';
-    this.container = undefined;
+
+    if (needDestroy) {
+      appCache.deleteApp(this.url);
+    }
+
+    if (this.container) {
+      this.container.innerHTML = '';
+      this.container = undefined;
+    }
   }
+
   get appCacheKey(): string {
     return this.url;
   }
-  public get status() {
+
+  get status(): ValueOfAppState {
     return this.state;
   }
-  public set status(v: AppState) {
-    this.state = v;
+
+  set status(value: ValueOfAppState) {
+    this.state = value;
+  }
+
+  /** 初始化沙盒 */
+  private initializeSandBox(): void {
+    if (this.scopeJs) {
+      this.sandBox = new SandBox(this);
+    }
+  }
+
+  /** 设置容器属性 */
+  private setContainerAttribute(container?: ContainerType): void {
+    const targetContainer = container || this.container;
+    if (targetContainer instanceof HTMLElement) {
+      targetContainer.setAttribute(CSS_ATTRIBUTE_KEY, this.name);
+    }
+  }
+
+  /** 转移节点到新容器 */
+  private transferNodes(container: ContainerType): void {
+    if (!this.container) return;
+
+    const fragment = document.createDocumentFragment();
+    const nodeList = Array.from(this.container.childNodes);
+
+    for (const node of nodeList) {
+      this.setupNodeProperties(node);
+      fragment.appendChild(node);
+    }
+
+    container.appendChild(fragment);
+  }
+
+  /** 设置节点属性 */
+  private setupNodeProperties(node: Node): void {
+    const nodeWithProps = node as Node & {
+      __KEEP_ALIVE__?: string;
+      __BK_WEWEB_APP_KEY__?: string;
+      data?: unknown;
+    };
+
+    if (this.keepAlive) {
+      nodeWithProps.__KEEP_ALIVE__ = this.name;
+    }
+    nodeWithProps.__BK_WEWEB_APP_KEY__ = this.name;
+    nodeWithProps.data = this.data;
+  }
+
+  /** 创建iframe元素 */
+  private createIframeElement(): HTMLIFrameElement {
+    const iframe = document.createElement('iframe');
+    const url = new URL(addUrlProtocol(this.url));
+
+    iframe.src = this.buildIframeSrc(url);
+    iframe.style.cssText = IFRAME_CONSTANTS.STYLE_HIDDEN;
+
+    return iframe;
+  }
+
+  /** 构建iframe源地址 */
+  private buildIframeSrc(url: URL): string {
+    return `${url.protocol}//${url.host}`;
+  }
+
+  /** 检查是否为Chrome浏览器 */
+  private isChromeUserAgent(): boolean {
+    return navigator.userAgent.includes(IFRAME_CONSTANTS.CHROME_USER_AGENT);
+  }
+
+  /** 处理非Chrome浏览器iframe */
+  private handleNonChromeIframe(iframe: HTMLIFrameElement, resolve: (iframe: HTMLIFrameElement) => void): void {
+    const iframeOnload = (): void => {
+      resolve(iframe);
+    };
+
+    if (iframe.contentDocument?.readyState === 'complete') {
+      iframeOnload();
+    } else {
+      iframe.addEventListener('load', iframeOnload);
+    }
+  }
+
+  /** 渲染应用内容 */
+  private renderAppContent(): void {
+    if (this.showSourceCode && this.source) {
+      this.container!.innerHTML = this.source.rawHtml || IFRAME_CONSTANTS.DEFAULT_HTML;
+    }
+  }
+
+  /** 检查是否需要重新加载 */
+  private needsReload(): boolean {
+    return this.status === AppState.ERROR;
   }
 }
-export const createApp = (props: IAppModleProps) => {
-  appCache.deleteApp(props.url);
-  const instance = new MicroAppModel(props);
-  appCache.setApp(instance);
+
+export const createApp = (props: IAppModelProps): void => {
+  const app = new MicroAppModel(props);
+  appCache.setApp(app);
+  app.start().finally(() => app.onMount());
 };

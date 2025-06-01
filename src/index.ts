@@ -23,46 +23,52 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
+
 import { collectBaseSource } from './base-app/collect-source';
-import BkWewebElement from './component/web-compnent';
+import BkWewebElement from './component/web-component';
 import './context/cache';
 
 import type { FetchSourceType, IStartOption } from './typings';
-export * from './lifecircle/activated';
-export * from './lifecircle/deactivated';
-export * from './lifecircle/load';
-export * from './lifecircle/mount';
-export * from './lifecircle/unload';
-export * from './lifecircle/unmount';
+export * from './lifecycle/activated';
+export * from './lifecycle/deactivated';
+export * from './lifecycle/load';
+export * from './lifecycle/mount';
+export * from './lifecycle/unload';
+export * from './lifecycle/unmount';
 export * from './preload/preload';
 export { WewebMode } from './typings';
+
 const CUSTOM_ELEMENT_TAG = 'bk-weweb';
+
 export class WeWeb {
   fetchSource?: FetchSourceType;
-  webcomponentTag = CUSTOM_ELEMENT_TAG;
+  webComponentTag = CUSTOM_ELEMENT_TAG;
+
   constructor() {
     if (!window.customElements.get(CUSTOM_ELEMENT_TAG)) {
       window.customElements.define(CUSTOM_ELEMENT_TAG, BkWewebElement);
     }
   }
-  // 设置自定义dom标签名
+
+  /** 设置自定义DOM标签名 */
   setWebComponentTag() {
-    if (!window.customElements.get(this.webcomponentTag)) {
-      window.customElements.define(this.webcomponentTag, BkWewebElement);
+    if (!window.customElements.get(this.webComponentTag)) {
+      window.customElements.define(this.webComponentTag, BkWewebElement);
     }
   }
-  // todo set some global start props
+
+  /** 启动WeWeb */
   start(option?: IStartOption) {
-    // 是否收集主应用资源
     if (option?.collectBaseSource) {
       collectBaseSource();
     }
     if (typeof option?.fetchSource === 'function') {
       this.fetchSource = option.fetchSource;
     }
-    this.webcomponentTag = option?.webcomponentTag || CUSTOM_ELEMENT_TAG;
+    this.webComponentTag = option?.webComponentTag || CUSTOM_ELEMENT_TAG;
     this.setWebComponentTag();
   }
 }
+
 const weWeb = new WeWeb();
 export default weWeb;

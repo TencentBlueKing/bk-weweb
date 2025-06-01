@@ -24,37 +24,53 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
+
 import { appCache } from '../cache/app-cache';
-import { AppState } from '../common';
+import { AppState, type ValueOfAppState } from '../common';
 import { setCurrentRunningApp } from '../context/cache';
 import SandBox from '../context/sandbox';
 import { EntrySource } from '../entry/entry';
 import { execAppScripts } from '../entry/script';
 import { executeAppStyles } from '../entry/style';
-import { type BaseModel, CSS_ATTRIBUTE_KEY, type IJsModelProps } from '../typings';
+import { CSS_ATTRIBUTE_KEY } from '../typings';
 import { random } from '../utils/common';
 
+import type { BaseModel, CallbackFunction, ContainerType, IJsModelProps } from '../typings';
 import type { fetchSource } from '../utils/fetch';
 import type { SourceType } from '../utils/load-source';
-// bk-kweweb 微模块模式
+
+const DEFAULT_RANDOM_LENGTH = 5;
+const WRAPPER_SUFFIX = '-wrapper';
+
+interface RenderableInstance {
+  render?: (container: HTMLElement, data: Record<string, unknown>) => void;
+}
+
+interface ScriptInstanceInfo {
+  exportInstance?: RenderableInstance & Record<string, unknown>;
+}
+
+/** BK-WEWEB 微模块模式类 */
 export class MicroInstanceModel implements BaseModel {
-  private state: AppState = AppState.UNSET; // 当前实例状态
-  appCacheKey: string; // 缓存key
-  container?: HTMLElement | ShadowRoot; // 容器
-  data: Record<string, unknown>; // 数据
-  initSource: SourceType; // 初始资源
-  isPreLoad = false; // 是否预加载
-  keepAlive: boolean; // 是否缓存
-  name: string; // 名称
-  sandBox?: SandBox; // 沙箱
-  scopeCss = true; // 是否隔离样式
-  scopeJs = false; // 是否隔离js
-  showSourceCode = true; // 是否显示源码
-  source?: EntrySource; // 入口资源
-  url: string; // url
+  private state: ValueOfAppState = AppState.UNSET;
+
+  appCacheKey: string;
+  container?: ContainerType;
+  data: Record<string, unknown>;
   fetchSource?: typeof fetchSource;
+  initSource: SourceType;
+  isPreLoad = false;
+  keepAlive: boolean;
+  name: string;
+  sandBox?: SandBox;
+  scopeCss = true;
+  scopeJs = false;
+  showSourceCode = true;
+  source?: EntrySource;
+  url: string;
+
   constructor(props: IJsModelProps & { fetchSource?: typeof fetchSource }) {
-    this.name = props.id !== props.url ? props.id! : random(5);
+    this.name = props.id !== props.url ? props.id! : random(DEFAULT_RANDOM_LENGTH);
     this.appCacheKey = props.id || this.name;
     this.url = props.url;
     this.container = props.container ?? undefined;
@@ -64,92 +80,185 @@ export class MicroInstanceModel implements BaseModel {
     this.keepAlive = props.keepAlive ?? false;
     this.data = props.data ?? {};
     this.initSource = props.initSource ?? [];
-    // 是否启用沙盒
-    if (this.scopeJs) {
-      this.sandBox = new SandBox(this);
-    }
     this.fetchSource = props.fetchSource;
+
+    this.initializeSandBox();
   }
-  activated<T>(
-    container: HTMLElement | ShadowRoot,
-    callback?: (instance: BaseModel, exportInstance?: T) => void,
-  ): void {
+
+  /** 激活微模块 */
+  activated<T = unknown>(container: ContainerType, callback?: CallbackFunction<T>): void {
     this.isPreLoad = false;
     this.state = AppState.ACTIVATED;
+
     if (this.container && container) {
-      if (container instanceof Element) container?.setAttribute(CSS_ATTRIBUTE_KEY, this.name);
-      const fragment = document.createDocumentFragment();
-      for (const node of Array.from(this.container.childNodes)) {
-        fragment.appendChild(node);
-      }
-      container.appendChild(fragment);
+      this.setContainerAttribute(container);
+      this.transferNodes(container);
       this.container = container;
       this.sandBox?.activated();
-      const scriptInfo = this.source?.getScript(this.url);
-      callback?.(this, scriptInfo?.exportInstance);
+
+      const scriptInfo = this.getScriptInfo();
+      callback?.(this, scriptInfo?.exportInstance as T);
     }
   }
+
+  /** 停用微模块 */
   deactivated(): void {
     this.state = AppState.DEACTIVATED;
     this.sandBox?.deactivated();
   }
-  mount<T>(
-    container?: HTMLElement | ShadowRoot,
-    callback?: (instance: MicroInstanceModel, exportInstance: T) => void,
-  ): void {
+
+  /** 挂载微模块 */
+  mount<T = unknown>(container?: ContainerType, callback?: CallbackFunction<T>): void {
     this.isPreLoad = false;
     this.container = container ?? this.container!;
     this.state = AppState.MOUNTING;
-    if (this.container instanceof HTMLElement) {
-      this.container?.setAttribute(CSS_ATTRIBUTE_KEY, this.name);
-    }
-    this.container.innerHTML = '';
-    const instanceWrap = document.createElement('div');
-    const wrapId = `${this.name}-wrapper`;
-    instanceWrap.setAttribute('id', wrapId);
-    if (this.source?.styles.size) {
-      executeAppStyles(this, this.container);
-    }
-    this.container.appendChild(instanceWrap);
+
+    this.setContainerAttribute(this.container);
+    this.setupContainer();
+    this.executeStyles();
     this.sandBox?.activated();
+
     execAppScripts(this).finally(() => {
       this.state = AppState.MOUNTED;
-      const scriptInfo = this.source?.getScript(this.url);
-      if (typeof scriptInfo?.exportInstance?.render === 'function') {
-        scriptInfo.exportInstance.render(instanceWrap, this.data);
-      }
-      callback?.(this, scriptInfo?.exportInstance);
+      this.renderInstance();
+
+      const scriptInfo = this.getScriptInfo();
+      callback?.(this, scriptInfo?.exportInstance as T);
     });
   }
+
+  /** 错误处理 */
   onError(): void {
     this.state = AppState.ERROR;
   }
+
+  /** 挂载处理 */
   onMount(): void {
     if (this.isPreLoad) return;
     this.state = AppState.LOADED;
     this.mount();
   }
-  registerRunningApp() {
+
+  /** 注册运行中的应用 */
+  registerRunningApp(): void {
     setCurrentRunningApp(this);
     Promise.resolve().then(() => setCurrentRunningApp(null));
   }
+
+  /** 启动微模块 */
   async start(): Promise<void> {
-    if (!this.source || [AppState.ERROR, AppState.UNSET].includes(this.status)) {
+    if (!this.source || this.needsReload()) {
       this.source = new EntrySource(this.url);
       await this.source.importEntry(this);
     }
   }
+
+  /** 卸载微模块 */
   unmount(needDestroy?: boolean): void {
     this.state = AppState.UNMOUNT;
     this.sandBox?.deactivated();
-    needDestroy && appCache.deleteApp(this.url);
-    this.container!.innerHTML = '';
-    this.container = undefined;
+
+    if (needDestroy) {
+      appCache.deleteApp(this.url);
+    }
+
+    if (this.container) {
+      this.container.innerHTML = '';
+      this.container = undefined;
+    }
   }
-  set status(v: AppState) {
-    this.state = v;
+
+  set status(value: ValueOfAppState) {
+    this.state = value;
   }
-  get status(): AppState {
+
+  get status(): ValueOfAppState {
     return this.state;
   }
+
+  /** 初始化沙盒 */
+  private initializeSandBox(): void {
+    if (this.scopeJs) {
+      this.sandBox = new SandBox(this);
+    }
+  }
+
+  /** 设置容器属性 */
+  private setContainerAttribute(container: ContainerType): void {
+    if (container instanceof HTMLElement) {
+      container.setAttribute(CSS_ATTRIBUTE_KEY, this.name);
+    }
+  }
+
+  /** 转移节点到新容器 */
+  private transferNodes(container: ContainerType): void {
+    if (!this.container) return;
+
+    const fragment = document.createDocumentFragment();
+    const nodeList = Array.from(this.container.childNodes);
+
+    for (const node of nodeList) {
+      fragment.appendChild(node);
+    }
+
+    container.appendChild(fragment);
+  }
+
+  /** 设置容器 */
+  private setupContainer(): void {
+    if (this.container) {
+      this.container.innerHTML = '';
+      if (this.showSourceCode) {
+        const instanceWrapper = this.createInstanceWrapper();
+        this.container.appendChild(instanceWrapper);
+      }
+    }
+  }
+
+  /** 执行样式 */
+  private executeStyles(): void {
+    if (this.source?.styles.size && this.container) {
+      executeAppStyles(this, this.container);
+    }
+  }
+
+  /** 创建实例包装器 */
+  private createInstanceWrapper(): HTMLDivElement {
+    const wrapper = document.createElement('div');
+    wrapper.id = `${this.name}${WRAPPER_SUFFIX}`;
+    return wrapper;
+  }
+
+  /** 渲染实例 */
+  private renderInstance(): void {
+    const scriptInfo = this.getScriptInfo();
+    if (scriptInfo?.exportInstance?.render && this.container) {
+      const targetContainer = this.showSourceCode
+        ? (this.container.querySelector(`#${this.name}${WRAPPER_SUFFIX}`) as HTMLElement)
+        : (this.container as HTMLElement);
+
+      if (targetContainer) {
+        scriptInfo.exportInstance.render(targetContainer, this.data);
+      }
+    }
+  }
+
+  /** 获取脚本信息 */
+  private getScriptInfo(): ScriptInstanceInfo | undefined {
+    const script = this.source?.getScript(this.url);
+    return script
+      ? { exportInstance: script.exportInstance as RenderableInstance & Record<string, unknown> }
+      : undefined;
+  }
+
+  /** 检查是否需要重新加载 */
+  private needsReload(): boolean {
+    return this.status === AppState.ERROR;
+  }
 }
+
+export const createInstance = (props: IJsModelProps): void => {
+  const instance = new MicroInstanceModel(props);
+  appCache.setApp(instance);
+  instance.start().finally(() => instance.onMount());
+};

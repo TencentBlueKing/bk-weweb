@@ -23,50 +23,46 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-const ELEMENT_TARGET_NAME = ['currentTarget', 'srcElement', 'target'];
-/**
- *
- * @param event
- * @param element
- * @returns {Event} event
- * @description 为事件对象添加 element 属性
- */
-export function defineEventSourceElement(element: HTMLLinkElement | HTMLScriptElement, eventName = 'custom'): Event {
-  return Object.defineProperties(
-    new CustomEvent(eventName),
-    ELEMENT_TARGET_NAME.reduce<Record<PropertyKey, any>>((props, name) => {
-      props[name] = {
-        get() {
-          return element;
-        },
-      };
-      return props;
-    }, {}),
-  );
-}
-/**
- *
- * @param element HTMLLinkElement | HTMLScriptElement
- * @description 触发 link 或者 script 的 onload 事件
- */
-export function dispatchLinkOrScriptLoad(element: HTMLLinkElement | HTMLScriptElement): void {
-  const event = defineEventSourceElement(element, 'load');
+
+// 事件目标属性名称列表
+const ELEMENT_TARGET_NAMES = ['currentTarget', 'srcElement', 'target'] as const;
+
+type SupportedElement = HTMLLinkElement | HTMLScriptElement;
+
+type PropertyDescriptors = Record<string, PropertyDescriptor>;
+
+/** 为事件对象添加元素属性 */
+export const defineEventSourceElement = (element: SupportedElement, eventName = 'custom'): Event => {
+  const targetProperties: PropertyDescriptors = ELEMENT_TARGET_NAMES.reduce((properties, targetName) => {
+    properties[targetName] = {
+      get: () => element,
+      enumerable: true,
+      configurable: true,
+    };
+    return properties;
+  }, {} satisfies PropertyDescriptors);
+
+  return Object.defineProperties(new CustomEvent(eventName), targetProperties);
+};
+
+/** 触发link或script元素的onload事件 */
+export const dispatchLinkOrScriptLoad = (element: SupportedElement): void => {
+  const loadEvent = defineEventSourceElement(element, 'load');
+
   if (typeof element.onload === 'function') {
-    element.onload!(event);
+    element.onload.call(element, loadEvent);
     return;
   }
-  element.dispatchEvent(event);
-}
-/**
- *
- * @param element HTMLLinkElement | HTMLScriptElement
- * @description 触发 link 或者 script 的 onerror 事件
- */
-export function dispatchLinkOrScriptError(element: HTMLLinkElement | HTMLScriptElement): void {
-  const event = defineEventSourceElement(element, 'error');
+  element.dispatchEvent(loadEvent);
+};
+
+/** 触发link或script元素的onerror事件 */
+export const dispatchLinkOrScriptError = (element: SupportedElement): void => {
+  const errorEvent = defineEventSourceElement(element, 'error');
+
   if (typeof element.onerror === 'function') {
-    element.onerror!(event);
+    element.onerror.call(element, errorEvent);
     return;
   }
-  element.dispatchEvent(event);
-}
+  element.dispatchEvent(errorEvent);
+};

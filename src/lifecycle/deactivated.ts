@@ -23,8 +23,28 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
+
+/**
+ * 失活生命周期模块
+ * @description 提供应用失活和状态保持功能，支持 keep-alive 模式
+ */
+
 import { appCache } from '../cache/app-cache';
-// unload
-export function unload(url: string) {
-  appCache.deleteApp(url);
+import { AppState } from '../common';
+import { resetBodyAndHeaderMethods } from '../context/element';
+
+/**
+ * deactivated 指定应用
+ * @description 将指定应用设置为失活状态，根据 keep-alive 配置决定
+ */
+export function deactivated(appKey: string) {
+  const app = appCache.getApp(appKey);
+
+  if (app && [AppState.ACTIVATED, AppState.MOUNTED].some(status => status === app.status)) {
+    app.keepAlive ? app.deactivated() : app.unmount();
+  }
+
+  if (!appCache.hasActiveApp) {
+    resetBodyAndHeaderMethods();
+  }
 }

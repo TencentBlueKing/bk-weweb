@@ -23,21 +23,18 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-import { appCache } from '../cache/app-cache';
-import { nextTask } from '../utils/common';
-import { beforeLoad } from './before-load';
 
-import type { BaseModel } from '../typings';
-// mount
-export function mount<T>(
-  appKey: string,
-  container?: HTMLElement | ShadowRoot,
-  callback?: <M extends BaseModel>(instance: M, exportInstance?: T) => void,
-) {
-  const app = appCache.getApp(appKey);
-  app &&
-    nextTask(() => {
-      beforeLoad();
-      app.mount(container, callback);
-    });
+/**
+ * 加载前预处理模块
+ * @description 提供应用加载前的初始化和预处理功能
+ */
+
+import { rewriteBodyAndHeaderMethods } from '../context/element';
+
+/**
+ * 加载前的预处理操作
+ * @description 在应用加载前执行必要的初始化操作，包括重写 DOM 操作方法
+ */
+export function beforeLoad(): void {
+  rewriteBodyAndHeaderMethods();
 }

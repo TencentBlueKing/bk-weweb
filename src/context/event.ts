@@ -27,31 +27,46 @@
 import { getCurrentRunningApp } from './cache';
 
 import type { DocumentEventListener } from '../typings';
-// rewrite document and body event listener
+
+/**
+ * 重写document和body的事件监听器
+ * 支持微前端应用的事件隔离和keepAlive模式
+ */
 export function rewriteDocumentAndBodyEvent(): { resetDocumentAndBodyEvent: () => void } {
+  // 保存原始的事件方法
   const { addEventListener, removeEventListener } = window.document;
   const { addEventListener: bodyAddEventListener, removeEventListener: bodyRemoveEventListener } = window.document.body;
+
+  // 存储keepAlive模式下的事件监听器
   const documentListenerMap = new Map<keyof DocumentEventMap, DocumentEventListener[]>();
+
+  // 重写document.addEventListener
   document.addEventListener = function <K extends keyof DocumentEventMap>(
     type: K,
     listener: DocumentEventListener,
     options?: AddEventListenerOptions | boolean | undefined,
   ): void {
     const app = getCurrentRunningApp();
+    // keepAlive模式下保存监听器
     if (app?.keepAlive) {
       const listeners = documentListenerMap.get(type) || [];
       documentListenerMap.set(type, [...listeners, listener]);
     }
+    // ShadowRoot容器特殊处理
     addEventListener.call(app?.container instanceof ShadowRoot ? app.container : this, type, listener, options);
   };
+
+  // body使用相同的addEventListener
   document.body.addEventListener = document.addEventListener;
 
+  // 重写document.removeEventListener
   document.removeEventListener = function <K extends keyof DocumentEventMap>(
     type: K,
     listener: DocumentEventListener,
     options?: AddEventListenerOptions | boolean,
   ): void {
     const app = getCurrentRunningApp();
+    // keepAlive模式下移除保存的监听器
     if (app?.keepAlive) {
       const listeners = documentListenerMap.get(type) || [];
       if (listeners.length && listeners.some(l => l === listener)) {
@@ -60,23 +75,31 @@ export function rewriteDocumentAndBodyEvent(): { resetDocumentAndBodyEvent: () =
     }
     removeEventListener.call(app?.container instanceof ShadowRoot ? app.container : this, type, listener, options);
   };
+
+  // body使用相同的removeEventListener
   document.body.removeEventListener = document.removeEventListener;
 
+  /**
+   * 重置事件监听器，恢复原始方法
+   */
   function resetDocumentAndBodyEvent(): void {
     const app = getCurrentRunningApp();
+    // 清理keepAlive模式下保存的事件监听器
     if (app?.keepAlive && documentListenerMap.values()) {
-      Array.from(documentListenerMap.entries()).forEach(([type, listeners]) => {
-        listeners?.forEach(listener => {
+      for (const [type, listeners] of documentListenerMap.entries()) {
+        for (const listener of listeners || []) {
           document.removeEventListener.call(document, type, listener);
-        });
-      });
+        }
+      }
     }
+    // 恢复原始方法
     document.addEventListener = addEventListener;
     document.body.addEventListener = bodyAddEventListener;
     document.removeEventListener = removeEventListener;
     document.body.removeEventListener = bodyRemoveEventListener;
     documentListenerMap.clear();
   }
+
   return {
     resetDocumentAndBodyEvent,
   };

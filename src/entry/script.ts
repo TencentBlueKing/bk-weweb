@@ -33,17 +33,21 @@ import { fetchSource } from '../utils/fetch';
 
 import type { BaseModel, IScriptOption } from '../typings';
 
+// 全局属性标记变量
 let firstGlobalProp: string | undefined;
 let secondGlobalProp: string | undefined;
 let lastGlobalProp: string | undefined;
 
-// Script脚本实例
+const STRICT_MODE_REGEX = /^"use\sstrict";$/gim;
+
+type ExecuteResult = Comment | HTMLScriptElement | undefined;
+
+/** Script脚本实例类 */
 export class Script {
   async = false;
   code = '';
   defer = false;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  exportInstance?: any;
+  exportInstance?: unknown;
   fromHtml: boolean;
   initial: boolean;
   isModule = false;
@@ -60,23 +64,19 @@ export class Script {
     this.fromHtml = fromHtml ?? false;
     this.initial = initial ?? false;
   }
-  /**
-   * @param app 应用
-   * @param needReplaceScriptElement 是否需要替换script标签
-   * @returns 返回执行后的script标签或注释
-   */
-  async executeCode(
-    app: BaseModel,
-    needReplaceScriptElement = false,
-  ): Promise<Comment | HTMLScriptElement | undefined> {
+
+  /** 执行脚本代码 */
+  async executeCode(app: BaseModel, needReplaceScriptElement = false): Promise<ExecuteResult> {
     try {
       if (!this.code) await this.getCode(app);
+
       if (app instanceof MicroInstanceModel) {
         const globalWindow = app.scopeJs ? app.sandBox?.proxyWindow || window : window;
         noteGlobalProps(globalWindow);
       }
-      let scopedCode = this.code;
-      scopedCode = this.transformCode(app);
+
+      const scopedCode = this.transformCode(app);
+
       if (app.showSourceCode || this.isModule) {
         const scriptElement = document.createElement('script');
         if (scriptElement.__BK_WEWEB_APP_KEY__) {
@@ -84,7 +84,9 @@ export class Script {
         }
         app.registerRunningApp();
         this.executeSourceScript(scriptElement, scopedCode);
+
         if (needReplaceScriptElement) return scriptElement;
+
         const needKeepAlive = !!app.keepAlive && !(app.container instanceof ShadowRoot);
         const container = needKeepAlive ? document.head : app.container;
         setMarkElement(scriptElement, app, needKeepAlive);
@@ -93,24 +95,26 @@ export class Script {
         this.executeMemoryScript(app, scopedCode);
         if (needReplaceScriptElement) return document.createComment('【bk-weweb】dynamic script');
       }
+
       if (app instanceof MicroInstanceModel) {
         const globalWindow = app.scopeJs ? app.sandBox?.proxyWindow || window : window;
         const exportProp = getGlobalProp(globalWindow);
         if (exportProp) {
-          this.exportInstance = globalWindow[exportProp];
+          this.exportInstance = (globalWindow as unknown as Record<string, unknown>)[exportProp];
           // window 下需清除全局副作用
           if (!app.scopeJs) {
-            delete globalWindow[exportProp];
+            delete (globalWindow as unknown as Record<string, unknown>)[exportProp];
           }
         }
       }
-    } catch (e) {
-      console.error('execute script code error', e);
+    } catch (error) {
+      console.error('execute script code error', error);
     }
     return;
   }
-  // 内存脚本执行
-  executeMemoryScript(app: BaseModel, scopedCode: string) {
+
+  /** 内存脚本执行 */
+  executeMemoryScript(app: BaseModel, scopedCode: string): void {
     try {
       const isScopedLocation = app instanceof MicroAppModel && app.scopeLocation;
       app.registerRunningApp();
@@ -120,31 +124,28 @@ export class Script {
         isScopedLocation ? app.iframe!.contentWindow!.location : window.location,
         isScopedLocation ? app.iframe!.contentWindow!.history : window.history,
       );
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
     }
   }
-  // 脚本标签执行
+
+  /** 脚本标签执行 */
   executeSourceScript(scriptElement: HTMLScriptElement, scopedCode: string): void {
     if (this.isModule) {
       scriptElement.src = `${this.url}?key=${Date.now()}`;
-      // if (this.url?.match(/\.ts$/)) {
-      //   // scriptElement.src = this.url + '?key=' + Date.now()!;
-      // } else {
-      //   // const blob = new Blob([this.code], { type: 'text/javascript' });
-      //   // scriptElement.src = URL.createObjectURL(blob);
-      // }
       scriptElement.setAttribute('type', 'module');
     } else {
       scriptElement.textContent = scopedCode;
     }
     this.url && scriptElement.setAttribute('origin-src', this.url);
   }
-  // 获取脚本内容
+
+  /** 获取脚本内容 */
   async getCode(app?: BaseModel): Promise<string> {
     if (this.code.length || !this.url) {
       return this.code;
     }
+
     let code = '';
     if (app?.source?.getScript(this.url)) {
       code = app.source.getScript(this.url)?.code || '';
@@ -153,22 +154,25 @@ export class Script {
       code = appCache.getCacheScript(this.url)?.code || '';
     }
     if (!code) {
-      code = await fetchSource(this.url, {}, app).catch(e => {
-        console.error(`fetch script ${this.url} error`, e);
+      code = await fetchSource(this.url, {}, app).catch(error => {
+        console.error(`fetch script ${this.url} error`, error);
         return '';
       });
     }
-    code = code.replace(/^"use\sstrict";$/gim, '');
+
+    code = code.replace(STRICT_MODE_REGEX, '');
     this.code = code;
     return code;
   }
-  setCode(code: string) {
+
+  setCode(code: string): void {
     this.code = code;
   }
-  // 转换脚本内容
+
+  /** 转换脚本内容 */
   transformCode(app: BaseModel): string {
-    // const sourceMapUrl = this.url ? `//# sourceURL=${this.url}\n` : '';
     const sourceMapUrl = '';
+
     if (app.sandBox) {
       if (this.isModule) {
         return ` with(window.${app.sandBox.windowSymbolKey}){
@@ -202,76 +206,100 @@ export class Script {
     return this.code;
   }
 }
-// 全局属性是否跳过标记
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function shouldSkipProperty(global: Window, p: any) {
+
+/** 全局属性是否跳过标记 */
+export function shouldSkipProperty(global: Window, property: number | string): boolean {
+  const globalWindow = global as unknown as Record<string, unknown>;
   return (
     // biome-ignore lint/suspicious/noPrototypeBuiltins: <explanation>
-    !global.hasOwnProperty(p) ||
-    (!Number.isNaN(p) && p < global.length) ||
+    !global.hasOwnProperty(property) ||
+    (!Number.isNaN(property) && (property as number) < global.length) ||
     (typeof navigator !== 'undefined' &&
       navigator.userAgent.indexOf('Trident') !== -1 &&
-      global[p] &&
+      Boolean(globalWindow[property]) &&
       typeof window !== 'undefined' &&
-      global[p].parent === window)
+      (globalWindow[property] as { parent?: Window })?.parent === window)
   );
 }
-// 获取instance js source code 执行后 绑定的export 实例
-export function getGlobalProp(global: Window, useFirstGlobalProp?: boolean) {
+
+/** 获取脚本执行后绑定的export实例 */
+export function getGlobalProp(global: Window, useFirstGlobalProp?: boolean): string | undefined {
   let cnt = 0;
   let foundLastProp: boolean | undefined;
   let result: string | undefined;
-  for (const p in global) {
+
+  for (const property in global) {
     // do not check frames cause it could be removed during import
-    if (shouldSkipProperty(global, p)) continue;
-    if ((cnt === 0 && p !== firstGlobalProp) || (cnt === 1 && p !== secondGlobalProp)) return p;
+    if (shouldSkipProperty(global, property)) continue;
+
+    if ((cnt === 0 && property !== firstGlobalProp) || (cnt === 1 && property !== secondGlobalProp)) {
+      return property;
+    }
+
     if (foundLastProp) {
-      lastGlobalProp = p;
-      result = (useFirstGlobalProp && result) || p;
+      lastGlobalProp = property;
+      result = (useFirstGlobalProp && result) || property;
     } else {
-      foundLastProp = p === lastGlobalProp;
+      foundLastProp = property === lastGlobalProp;
     }
     cnt += 1;
   }
+
   return result;
 }
-// 标记全局属性
-export function noteGlobalProps(global: Window) {
+
+/** 标记全局属性 */
+export function noteGlobalProps(global: Window): string | undefined {
   secondGlobalProp = undefined;
   firstGlobalProp = secondGlobalProp;
-  for (const p in global) {
-    if (shouldSkipProperty(global, p)) continue;
-    if (!firstGlobalProp) firstGlobalProp = p;
-    else if (!secondGlobalProp) secondGlobalProp = p;
-    lastGlobalProp = p;
+
+  for (const property in global) {
+    if (shouldSkipProperty(global, property)) continue;
+
+    if (!firstGlobalProp) {
+      firstGlobalProp = property;
+    } else if (!secondGlobalProp) {
+      secondGlobalProp = property;
+    }
+    lastGlobalProp = property;
   }
+
   return lastGlobalProp;
 }
-// app初始化dom 脚本执行
-export async function execAppScripts(app: BaseModel) {
+
+/**
+ * app初始化dom脚本执行
+ */
+export async function execAppScripts(app: BaseModel): Promise<void> {
   // const appInitialScriptList = Array.from(app.source!.scripts.values()).filter(script => script.initial);
   // // 初始化脚本最先执行
   // if (appInitialScriptList.length) {
   //   await Promise.all(appInitialScriptList.map(script => script.executeCode(app)));
   // }
+
   const appScriptList = Array.from(app.source!.scripts.values()).filter(script => script.fromHtml || script.initial);
   const commonList = appScriptList.filter(script => (!script.async && !script.defer) || script.isModule);
-  // 保证同步脚本 和 module类型 最先执行
+
+  // 保证同步脚本和module类型最先执行
   await Promise.all(commonList.map(script => script.getCode(app)));
   await Promise.all(commonList.map(script => script.executeCode(app)));
 
-  // 最后执行 defer 和 async 脚本
-  const deferScriptList: Promise<Comment | HTMLScriptElement | undefined>[] = [];
-  const asyncScriptList: Promise<Comment | HTMLScriptElement | undefined>[] = [];
+  // 最后执行defer和async脚本
+  const deferScriptList: Promise<ExecuteResult>[] = [];
+  const asyncScriptList: Promise<ExecuteResult>[] = [];
+
   // async defer 脚本执行
   for (const script of appScriptList) {
     if (script.defer || script.async) {
       if (!script.code && script.defer) {
         deferScriptList.push(script.executeCode(app));
-      } else asyncScriptList.push(script.executeCode(app));
+      } else {
+        asyncScriptList.push(script.executeCode(app));
+      }
     }
   }
-  await Promise.all([...asyncScriptList, ...deferScriptList]).catch(e => {
-    console.error(e);
+
+  await Promise.all([...asyncScriptList, ...deferScriptList]).catch(error => {
+    console.error(error);
   });
 }

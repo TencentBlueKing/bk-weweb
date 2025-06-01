@@ -23,15 +23,28 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
+
+/**
+ * 卸载生命周期模块
+ * @description 提供应用卸载和清理功能
+ */
+
 import { appCache } from '../cache/app-cache';
 import { AppState } from '../common';
 import { resetBodyAndHeaderMethods } from '../context/element';
-// unmount
-export function unmount(appKey: string) {
+
+/**
+ * 卸载指定应用
+ * @description 卸载指定的应用实例，并在没有活跃应用时重置全局方法
+ * @param appKey - 应用的唯一标识符
+ */
+export function unmount(appKey: string): void {
   const app = appCache.getApp(appKey);
+
   if (app && app.status !== AppState.UNMOUNT) {
     app.unmount();
   }
+
   if (!appCache.hasActiveApp) {
     resetBodyAndHeaderMethods();
   }

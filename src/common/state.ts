@@ -23,15 +23,31 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-// app status
-export enum AppState {
-  ACTIVATED = 'ACTIVATED', // 激活
-  DEACTIVATED = 'DEACTIVATED', // 未激活
-  ERROR = 'ERROR', // Error
-  LOADED = 'LOADED', // 加载完成
-  LOADING = 'LOADING', // 加载中
-  MOUNTED = 'MOUNTED', // 挂载完成
-  MOUNTING = 'MOUNTING', // 挂载中
-  UNMOUNT = 'UNMOUNT', // 卸载
-  UNSET = 'UNSET', // 未设置
-}
+
+/**
+ * 应用状态常量
+ * 定义微前端应用的生命周期状态
+ */
+export const AppState = {
+  /** 未设置状态 */
+  UNSET: 'UNSET',
+  /** 加载中 */
+  LOADING: 'LOADING',
+  /** 加载完成 */
+  LOADED: 'LOADED',
+  /** 挂载中 */
+  MOUNTING: 'MOUNTING',
+  /** 挂载完成 */
+  MOUNTED: 'MOUNTED',
+  /** 激活状态 */
+  ACTIVATED: 'ACTIVATED',
+  /** 未激活状态 */
+  DEACTIVATED: 'DEACTIVATED',
+  /** 卸载状态 */
+  UNMOUNT: 'UNMOUNT',
+  /** 错误状态 */
+  ERROR: 'ERROR',
+} as const;
+
+export type KeyOfAppState = keyof typeof AppState;
+export type ValueOfAppState = (typeof AppState)[KeyOfAppState];

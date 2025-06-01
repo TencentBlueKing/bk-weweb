@@ -1,131 +1,143 @@
-/*
- * Tencent is pleased to support the open source community by making
- * 蓝鲸智云PaaS平台 (BlueKing PaaS) available.
- *
- * Copyright (C) 2021 THL A29 Limited, a Tencent company.  All rights reserved.
- *
- * 蓝鲸智云PaaS平台 (BlueKing PaaS) is licensed under the MIT License.
- *
- * License for 蓝鲸智云PaaS平台 (BlueKing PaaS):
- *
- * ---------------------------------------------------
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
- * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
- * IN THE SOFTWARE.
- */
-import type { AppState } from '../common';
-import { WewebCustomAttrs } from '../component/web-compnent';
+import type { ValueOfAppState } from '../common';
+import { WewebCustomAttrs } from '../component/web-component';
 import type SandBox from '../context/sandbox';
 import type { EntrySource } from '../entry/entry';
 import type { fetchSource } from '../utils/fetch';
 import type { SourceType } from '../utils/load-source';
 
+/** WEWEB运行模式 */
+export enum WewebMode {
+  /** 微应用模式 */
+  APP = 'app',
+  /** 配置模式 */
+  CONFIG = 'config',
+  /** 微模块模式 */
+  INSTANCE = 'js',
+}
+
+/** 容器类型 */
+export type ContainerType = HTMLElement | ShadowRoot;
+
+/** 通用回调函数类型 */
+export type CallbackFunction<T = unknown> = (instance: BaseModel, exportInstance?: T) => void;
+
+/** Web Component 属性接口 */
 export interface IComponentProps {
-  // 传递给子应用的数据 默认保存
+  /** 传递给子应用的数据 */
   [WewebCustomAttrs.data]?: string;
-  // entry mode js | config | html 默认 html
+  /** 运行模式 */
   [WewebCustomAttrs.mode]?: WewebMode;
-  // 是否共享主应用路由
+  /** 是否共享主应用路由 */
   [WewebCustomAttrs.scopeLocation]?: boolean;
-  // 是否使用shadowDom
+  /** 是否使用 ShadowDOM */
   [WewebCustomAttrs.setShodowDom]?: boolean;
-  // 是否在dom上显示源码 默认不显示 内存执行
+  /** 是否显示源码 */
   [WewebCustomAttrs.showSourceCode]?: boolean;
-  // url 必选
+  /** 应用URL */
   [WewebCustomAttrs.url]: string;
 }
 
-// 基础属性接口
+/** 基础模型属性接口 */
 export interface IBaseModelProps {
-  // entry mode js | config | html 默认 html
+  /** 运行模式 */
   [WewebCustomAttrs.mode]?: WewebMode;
-  // url 必选
+  /** 应用URL */
   [WewebCustomAttrs.url]: string;
-  id?: null | string;
-  // 是否是预加载
+  /** 应用ID */
+  id?: string | null;
+  /** 是否预加载 */
   isPreLoad?: boolean;
 }
 
-// app模式属性配置
-export interface IAppModleProps extends IBaseModelProps {
-  // 传递给子应用的数据 默认保存
+/** 微应用模式属性配置 */
+export interface IAppModelProps extends IBaseModelProps {
+  /** 传递给子应用的数据 */
   [WewebCustomAttrs.data]?: Record<string, unknown>;
-  // 是否缓存dom
+  /** 是否缓存DOM */
   [WewebCustomAttrs.keepAlive]?: boolean;
-  // 是否启用样式隔离 默认隔离
+  /** 是否启用样式隔离 */
   [WewebCustomAttrs.scopeCss]?: boolean;
-  // 是否使用沙盒隔离 默认隔离
+  /** 是否使用沙盒隔离 */
   [WewebCustomAttrs.scopeJs]?: boolean;
-  // 是否共享主应用路由
+  /** 是否共享主应用路由 */
   [WewebCustomAttrs.scopeLocation]?: boolean;
-  // 是否使用shadowDom
+  /** 是否使用 ShadowDOM */
   [WewebCustomAttrs.setShodowDom]?: boolean;
-  // 是否在dom上显示源码 默认不显示 内存执行
+  /** 是否显示源码 */
   [WewebCustomAttrs.showSourceCode]?: boolean;
-  container?: HTMLElement | ShadowRoot | null;
-  // 初始化source 如 ['http://www.hostname.com/a.js', 'http://www.hostname.com/b.css']
+  /** 容器元素 */
+  container?: ContainerType | null;
+  /** 初始化资源 */
   initSource?: SourceType;
 }
 
+/** 微模块模式属性配置 */
 export interface IJsModelProps extends IBaseModelProps {
-  // 传递给实例render方法的数据
+  /** 传递给模块的数据 */
   [WewebCustomAttrs.data]?: Record<string, unknown>;
-  // 是否在dom上显示源码 默认显示
+  /** 是否显示源码 */
   [WewebCustomAttrs.showSourceCode]?: boolean;
-  // 容器
-  container?: HTMLElement | ShadowRoot | null;
-  // 初始化source 如 ['http://www.hostname.com/a.js', 'http://www.hostname.com/b.css']
+  /** 容器元素 */
+  container?: ContainerType | null;
+  /** 初始化资源 */
   initSource?: SourceType;
-  // 是否缓存dom
+  /** 是否缓存DOM */
   keepAlive?: boolean;
-  // 是否启用样式隔离 默认隔离
+  /** 是否启用样式隔离 */
   scopeCss?: boolean;
-  // 是否使用沙盒隔离 默认不隔离
+  /** 是否使用沙盒隔离 */
   scopeJs?: boolean;
 }
 
+/** 基础模型接口 */
 export interface BaseModel {
-  activated<T>(container: HTMLElement | ShadowRoot, callback?: (instance: BaseModel, exportInstance?: T) => void): void;
-  container?: HTMLElement | ShadowRoot;
-  deactivated(): void;
-  get appCacheKey(): string;
-  get status(): AppState;
-  // eslint-disable-next-line perfectionist/sort-interfaces
+  /** 应用缓存键 */
+  readonly appCacheKey: string;
+  /** 容器元素 */
+  container?: ContainerType;
+  /** 初始化资源 */
   initSource?: SourceType;
+  /** 是否为模块应用 */
   isModuleApp?: boolean;
-  // 初始化source 如 ['http://www.hostname.com/a.js', 'http://www.hostname.com/b.css']
+  /** 是否预加载 */
   isPreLoad: boolean;
+  /** 是否保持活跃 */
   keepAlive?: boolean;
-  mount<T>(container?: HTMLElement | ShadowRoot, callback?: (instance: BaseModel, exportInstance?: T) => void): void;
+  /** 应用名称 */
   name: string;
-  onError(): void;
-  onMount(): void;
-  registerRunningApp(): void;
+  /** 沙盒实例 */
   sandBox?: SandBox;
-  // 是否启用样式隔离 默认隔离
+  /** 是否启用样式隔离 */
   scopeCss?: boolean;
+  /** 是否使用JS隔离 */
   scopeJs: boolean;
-  set status(v: AppState);
+  /** 是否显示源码 */
   showSourceCode?: boolean;
+  /** 入口资源 */
   source?: EntrySource;
-  start(): Promise<void>;
-  unmount(needDestroy?: boolean): void;
+  /** 应用URL */
   url: string;
+  /** 获取资源的函数 */
   fetchSource?: typeof fetchSource;
-}
 
-export enum WewebMode {
-  APP = 'app',
-  CONFIG = 'config',
-  INSTANCE = 'js',
+  /** 激活应用 */
+  activated<T = unknown>(container: ContainerType, callback?: CallbackFunction<T>): void;
+  /** 停用应用 */
+  deactivated(): void;
+  /** 挂载应用 */
+  mount<T = unknown>(container?: ContainerType, callback?: CallbackFunction<T>): void;
+  /** 错误处理 */
+  onError(): void;
+  /** 挂载处理 */
+  onMount(): void;
+  /** 注册运行中的应用 */
+  registerRunningApp(): void;
+  /** 启动应用 */
+  start(): Promise<void>;
+  /** 卸载应用 */
+  unmount(needDestroy?: boolean): void;
+  /** 获取应用状态 */
+  get status(): ValueOfAppState;
+  /** 设置应用状态 */
+  set status(value: ValueOfAppState);
 }

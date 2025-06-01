@@ -23,16 +23,19 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
+
+/**
+ * 卸载生命周期模块
+ * @description 提供应用完全卸载和清理功能
+ */
+
 import { appCache } from '../cache/app-cache';
-import { AppState } from '../common';
-import { resetBodyAndHeaderMethods } from '../context/element';
-// deactivated
-export function deactivated(appKey: string) {
-  const app = appCache.getApp(appKey);
-  if (app && [AppState.ACTIVATED, AppState.MOUNTED].includes(app.status)) {
-    app.keepAlive ? app.deactivated() : app.unmount();
-  }
-  if (!appCache.hasActiveApp) {
-    resetBodyAndHeaderMethods();
-  }
+
+/**
+ * 卸载并删除指定应用
+ * @description 从缓存中完全删除指定的应用实例，释放相关资源
+ * @param url - 应用的 URL 标识符，用于定位要删除的应用
+ */
+export function unload(url: string): void {
+  appCache.deleteApp(url);
 }

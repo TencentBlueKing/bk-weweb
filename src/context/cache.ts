@@ -24,17 +24,20 @@
  * IN THE SOFTWARE.
  */
 import type { BaseModel } from '../typings';
-// 当前正在运行的app
+
+// 应用实例管理
 let currentRunningApp: BaseModel | null = null;
-export function getCurrentRunningApp() {
-  return currentRunningApp;
-}
-export function setCurrentRunningApp(appInstance: BaseModel | null) {
+
+export const getCurrentRunningApp = () => currentRunningApp;
+export const setCurrentRunningApp = (appInstance: BaseModel | null) => {
   currentRunningApp = appInstance;
-}
+};
+
 export const SCOPED_CSS_STYLE_ID = 'SCOPED_CSS_STYLE_ID';
 export const windowNativeFuncMap = new Map<PropertyKey, true>();
-const globalContextCode = `const { ${[
+
+// 提前注入全局上下文字段
+const GLOBAL_CONTEXT_VARIABLES = [
   'Array',
   'ArrayBuffer',
   'Boolean',
@@ -92,24 +95,41 @@ const globalContextCode = `const { ${[
   'valueOf',
   'WeakMap',
   'WeakSet',
-].join(',')} }= this;`;
-export const getGlobalContextCode = () => {
-  return globalContextCode;
+] as const;
+
+/**
+ * 获取全局上下文代码
+ */
+export const getGlobalContextCode = () => `const { ${GLOBAL_CONTEXT_VARIABLES.join(',')} } = this;`;
+
+/**
+ * 检查函数是否为原生代码
+ */
+const isNativeFunction = (func: unknown): boolean => {
+  if (typeof func !== 'function') return false;
+  try {
+    return Function.prototype.toString.call(func).includes('[native code]');
+  } catch {
+    return false;
+  }
 };
+
 /**
  * 收集原生window方法
  */
-const collectNativeWindowFunc = () => {
-  const keyList = Object.getOwnPropertyNames(window);
-  for (const key of keyList) {
+const collectNativeWindowFunc = (): void => {
+  const windowKeys = Object.getOwnPropertyNames(window);
+
+  for (const key of windowKeys) {
     if (
       !windowNativeFuncMap.has(key) &&
-      key.match(/^[A-Z]/) &&
-      typeof window[key] === 'function' &&
-      (window[key] as any).toString().includes('[native code]')
+      /^[A-Z]/.test(key) &&
+      isNativeFunction((window as unknown as Record<string, unknown>)[key])
     ) {
       windowNativeFuncMap.set(key, true);
     }
   }
 };
+
+// 初始化收集原生方法
 collectNativeWindowFunc();

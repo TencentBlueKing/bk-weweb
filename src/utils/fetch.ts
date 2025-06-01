@@ -27,12 +27,29 @@ import weWeb from '..';
 
 import type { BaseModel } from '../typings';
 
-export function fetchSource(url: string, options = {}, app?: BaseModel): Promise<string> {
+type FetchOptions = Record<string, unknown>;
+
+/** 统一的资源获取方法，支持应用级别和全局级别的自定义fetch */
+export const fetchSource = async (url: string, options: FetchOptions = {}, app?: BaseModel): Promise<string> => {
+  // 优先使用应用级别的自定义fetch方法
   if (typeof app?.fetchSource === 'function') {
-    return app.fetchSource(url, options).catch(() => '');
+    try {
+      return await app.fetchSource(url, options);
+    } catch {
+      return '';
+    }
   }
+
+  // 其次使用全局自定义fetch方法
   if (weWeb.fetchSource) {
     return weWeb.fetchSource(url, options);
   }
-  return window.fetch(url, options).then(res => res.text());
-}
+
+  // 最后使用原生fetch方法
+  try {
+    const response = await window.fetch(url, options as RequestInit);
+    return await response.text();
+  } catch {
+    return '';
+  }
+};

@@ -23,29 +23,37 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
+
+/**
+ * 挂载生命周期模块
+ * @description 提供应用挂载到指定容器的功能
+ */
+
 import { appCache } from '../cache/app-cache';
-import { AppState } from '../common';
 import { nextTask } from '../utils/common';
 import { beforeLoad } from './before-load';
 
 import type { BaseModel } from '../typings';
-// 激活应用
-export function activated<T>(
+
+/**
+ * 挂载应用到指定容器
+ * @description 将已加载的应用挂载到指定的 DOM 容器或 ShadowRoot 中
+ * @template T - 导出实例的类型
+ * @param appKey - 应用的唯一标识符
+ * @param container - 挂载容器，可以是 HTMLElement 或 ShadowRoot（可选）
+ * @param callback - 挂载完成后的回调函数（可选）
+ */
+export function mount<T>(
   appKey: string,
-  container: HTMLElement | ShadowRoot,
+  container?: HTMLElement | ShadowRoot,
   callback?: <M extends BaseModel>(instance: M, exportInstance?: T) => void,
-) {
+): void {
   const app = appCache.getApp(appKey);
-  if (app?.status === AppState.DEACTIVATED && app.keepAlive) {
+
+  if (app) {
     nextTask(() => {
       beforeLoad();
-      app.activated(container, callback);
+      app.mount(container, callback);
     });
-  } else {
-    app &&
-      nextTask(() => {
-        beforeLoad();
-        app.mount(container, callback);
-      });
   }
 }

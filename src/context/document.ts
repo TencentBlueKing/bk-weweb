@@ -23,47 +23,90 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-import type { BaseModel } from '../typings/model';
-const SPECIAL_ELEMENT_TAG = ['body', 'html', 'head'];
+
 /**
- * 创建代理的document
- * @param rawDocument 原始document
- * @param app 应用实例
- * @returns 代理的document
+ * Document 代理模块
+ * @description 为微前端应用创建代理 document 对象，实现 DOM 隔离和沙箱环境
  */
-export const createProxyDocument = (rawDocument: Document, app: BaseModel) => {
-  const fakeDocument = {};
-  function shadowRootInsertAdjacentHTML(where: InsertPosition, domString: string) {
+
+import type { BaseModel } from '../typings/model';
+
+/**
+ * 特殊元素标签名称
+ * @description 这些标签在查询时需要特殊处理，通常指向宿主环境的元素
+ */
+const SPECIAL_ELEMENT_TAGS = ['body', 'html', 'head'] as const;
+
+/**
+ * 应用容器键名
+ * @description 用于标记元素所属的微前端应用
+ */
+const APP_KEY_PROPERTY = '__BK_WEWEB_APP_KEY__' as const;
+
+/**
+ * 插入位置类型映射
+ * @description 定义 insertAdjacentHTML 方法支持的插入位置
+ */
+type InsertPosition = 'afterbegin' | 'afterend' | 'beforebegin' | 'beforeend';
+
+/**
+ * ShadowRoot insertAdjacentHTML 实现
+ * @description 在 ShadowRoot 环境下实现 insertAdjacentHTML 方法
+ * @param app - 应用实例
+ * @param where - 插入位置
+ * @param domString - 要插入的 HTML 字符串
+ */
+function createShadowRootInsertAdjacentHTML(app: BaseModel) {
+  return function shadowRootInsertAdjacentHTML(where: InsertPosition, domString: string): void {
     const temporaryContainer = document.createElement('div');
     temporaryContainer.innerHTML = domString;
     const elements = Array.from(temporaryContainer.childNodes);
     const shadow = app.container! as ShadowRoot;
+
     switch (where) {
       case 'beforebegin':
-        elements.forEach(el => shadow.host.parentNode?.insertBefore(el, shadow.host));
+        for (const item of elements) {
+          shadow.host.parentNode?.insertBefore(item, shadow.host);
+        }
         break;
       case 'afterbegin':
-        elements.reverse().forEach(el => shadow.insertBefore(el, shadow.firstChild));
+        for (const item of elements.reverse()) {
+          shadow.insertBefore(item, shadow.firstChild);
+        }
         break;
       case 'beforeend':
-        elements.forEach(el => shadow.appendChild(el));
+        for (const item of elements) {
+          shadow.appendChild(item);
+        }
         break;
       case 'afterend':
-        elements.forEach(el => shadow.host.parentNode?.insertBefore(el, shadow.host.nextSibling));
+        for (const item of elements) {
+          shadow.host.parentNode?.insertBefore(item, shadow.host.nextSibling);
+        }
         break;
     }
-  }
-  const proxyBody = new Proxy(
+  };
+}
+
+/**
+ * 创建代理 body 对象
+ * @description 为微前端应用创建隔离的 body 代理对象
+ * @param rawDocument - 原始 document 对象
+ * @param app - 应用实例
+ * @returns ProxyHandler<{}> - body 代理对象
+ */
+function createProxyBody(rawDocument: Document, app: BaseModel) {
+  return new Proxy(
     {},
     {
       get(_, key) {
-        // ShadowRoot 处理逻辑简化
+        // ShadowRoot 环境处理
         if (app.container instanceof ShadowRoot) {
           if (key === 'insertAdjacentHTML') {
-            // shadowRoot 中没有 insertAdjacentHTML
-            return shadowRootInsertAdjacentHTML.bind(app.container);
+            return createShadowRootInsertAdjacentHTML(app);
           }
-          const value = app.container[key];
+
+          const value = Reflect.get(app.container, key);
           if (typeof value === 'function') {
             return value.bind(app.container);
           }
@@ -71,131 +114,267 @@ export const createProxyDocument = (rawDocument: Document, app: BaseModel) => {
             return value;
           }
         }
-        // 直接返回 rawDocument.body 的属性或绑定函数
+
+        // 默认使用原始 document.body
         const value = Reflect.get(rawDocument.body, key);
         return typeof value === 'function' ? value.bind(rawDocument.body) : value;
       },
+
       set(_, key, value) {
-        // ShadowRoot 处理逻辑简化
         if (app.container instanceof ShadowRoot) {
-          app.container[key] = value;
+          Reflect.set(app.container, key, value);
           return true;
         }
-        // 直接设置 rawDocument.body 的属性
+
         Reflect.set(rawDocument.body, key, value);
         return true;
       },
     },
   );
-  /**
-   * @param tagName 标签名
-   * @param options 选项
-   * @returns
-   */
-  function createElement<K extends keyof HTMLElementTagNameMap>(
+}
+
+/**
+ * 创建元素并标记应用归属
+ * @description 重写 createElement 方法，为创建的元素标记所属应用
+ * @param rawDocument - 原始 document 对象
+ * @param app - 应用实例
+ * @returns createElement 函数
+ */
+function createElementWithAppKey(rawDocument: Document, app: BaseModel) {
+  return function createElement<K extends keyof HTMLElementTagNameMap>(
     tagName: K,
     options?: ElementCreationOptions | undefined,
   ) {
     const element = rawDocument.createElement(tagName, options);
-    // img.src = 'xxx' iframe.src = 'xxx' 均不能在setAttributes上监听 但是这里所有的src都是 全地址 无法判断是否需要添加子应用域名
-    // if (tagName.toLocaleLowerCase() === 'img') {
-    //   const observer = new MutationObserver((list, observer) =>  {
-    //     observer.disconnect();
-    //     const url = new URL((element as HTMLImageElement).src)
-    //     (element as HTMLImageElement).src = `${}`
-    //   });
-    //   observer.observe(element, { attributeFilter: ['src'], subtree: false, childList: false });
-    // }
-    element.__BK_WEWEB_APP_KEY__ = app.appCacheKey;
+
+    // 为元素标记所属应用
+    (element as HTMLElement & { [APP_KEY_PROPERTY]: string })[APP_KEY_PROPERTY] = app.appCacheKey;
+
     return element;
+  };
+}
+
+/**
+ * 检查是否为特殊元素标签
+ * @description 判断选择器是否匹配特殊元素标签
+ * @param selector - CSS 选择器字符串
+ * @returns boolean - 是否为特殊元素标签
+ */
+function isSpecialElementTag(selector: string): boolean {
+  return (SPECIAL_ELEMENT_TAGS as readonly string[]).includes(selector);
+}
+
+/**
+ * 安全执行查询选择器
+ * @description 在容器中安全执行查询，捕获可能的异常
+ * @param container - 查询容器
+ * @param selector - CSS 选择器
+ * @returns Element | null - 查询结果
+ */
+function safeQuerySelector(container: Element | ShadowRoot | null | undefined, selector: string): Element | null {
+  try {
+    return container?.querySelector(selector) ?? null;
+  } catch {
+    return null;
   }
-  /**
-   * 查询选择器的新方法
-   * @param selectors 选择器字符串
-   * @returns 匹配的元素或 null
-   */
-  function querySelectorNew(this: Document, selectors: string) {
+}
+
+/**
+ * 安全执行查询所有选择器
+ * @description 在容器中安全执行查询所有，捕获可能的异常
+ * @param container - 查询容器
+ * @param selector - CSS 选择器
+ * @returns NodeListOf<Element> - 查询结果集合
+ */
+function safeQuerySelectorAll(
+  container: Element | ShadowRoot | null | undefined,
+  selector: string,
+): NodeListOf<Element> {
+  try {
+    return container?.querySelectorAll(selector) ?? ([] as unknown as NodeListOf<Element>);
+  } catch {
+    return [] as unknown as NodeListOf<Element>;
+  }
+}
+
+/**
+ * 创建代理查询选择器方法
+ * @description 重写 querySelector 方法，支持容器隔离
+ * @param rawDocument - 原始 document 对象
+ * @param app - 应用实例
+ * @param proxyBody - 代理 body 对象
+ * @returns querySelector 函数
+ */
+function createProxyQuerySelector(rawDocument: Document, app: BaseModel, proxyBody: unknown) {
+  return function querySelectorNew(this: Document, selectors: string): Element | null {
     if (selectors === proxyBody) {
-      return app.container instanceof ShadowRoot ? app.container : rawDocument.body;
+      return app.container instanceof ShadowRoot ? (app.container as unknown as Element) : rawDocument.body;
     }
-    // 如果选择器是特殊元素标签
-    if (SPECIAL_ELEMENT_TAG.includes(selectors)) {
-      // 如果当前应用程序容器是 ShadowRoot 类型
+
+    if (isSpecialElementTag(selectors)) {
       if (app?.container instanceof ShadowRoot) {
-        return app?.container;
+        return app?.container as unknown as Element;
       }
-      // 否则调用原始的 querySelector 方法
       return rawDocument.querySelector.call(this, selectors);
     }
-    // 返回当前应用程序容器中匹配选择器的元素，如果没有匹配的元素则返回 null
-    try {
-      return app?.container?.querySelector(selectors) ?? null;
-    } catch {
-      return null;
-    }
-  }
-  /**
-   * 重写了 Document 类的 querySelectorAll 方法
-   * @param selectors - 要查询的选择器
-   * @returns 匹配到的元素列表或空数组
-   */
-  function querySelectorAllNew(selectors: string) {
-    // 如果选择器是特殊元素标签，则返回容器元素或调用原生 querySelector 方法
-    if (SPECIAL_ELEMENT_TAG.includes(selectors)) {
+
+    return safeQuerySelector(app?.container, selectors);
+  };
+}
+
+/**
+ * 创建代理查询所有选择器方法
+ * @description 重写 querySelectorAll 方法，支持容器隔离
+ * @param rawDocument - 原始 document 对象
+ * @param app - 应用实例
+ * @returns querySelectorAll 函数
+ */
+function createProxyQuerySelectorAll(rawDocument: Document, app: BaseModel) {
+  return function querySelectorAllNew(selectors: string): NodeListOf<Element> {
+    if (isSpecialElementTag(selectors)) {
       if (app?.container instanceof ShadowRoot) {
-        return app?.container;
+        return [app?.container] as unknown as NodeListOf<Element>;
       }
-      return rawDocument.querySelector(selectors);
+      const result = rawDocument.querySelector(selectors);
+      return result ? ([result] as unknown as NodeListOf<Element>) : ([] as unknown as NodeListOf<Element>);
     }
-    // 返回运行中应用程序的容器元素中匹配到的元素列表或空数组
-    return app?.container?.querySelectorAll(selectors) ?? [];
-  }
-  function getElementByIdNew(key: string) {
-    return querySelectorNew.call(rawDocument, `#${key}`);
-  }
-  function getElementsByClassName(key: string) {
-    return querySelectorAllNew(`.${key}`);
-  }
-  function getElementsByTagName<K extends keyof HTMLElementTagNameMap>(key: K) {
-    if (SPECIAL_ELEMENT_TAG.includes(key) || (!app?.showSourceCode && key.toLocaleLowerCase() === 'script')) {
-      return rawDocument.getElementsByTagName(key);
+
+    return safeQuerySelectorAll(app?.container, selectors);
+  };
+}
+
+/**
+ * 创建代理 getElementById 方法
+ * @description 重写 getElementById 方法，支持容器隔离
+ * @param rawDocument - 原始 document 对象
+ * @param querySelector - 代理的 querySelector 方法
+ * @returns getElementById 函数
+ */
+function createProxyGetElementById(
+  rawDocument: Document,
+  querySelector: (this: Document, selectors: string) => Element | null,
+) {
+  return function getElementByIdNew(id: string): HTMLElement | null {
+    return querySelector.call(rawDocument, `#${id}`) as HTMLElement | null;
+  };
+}
+
+/**
+ * 创建代理 getElementsByClassName 方法
+ * @description 重写 getElementsByClassName 方法，支持容器隔离
+ * @param querySelectorAll - 代理的 querySelectorAll 方法
+ * @returns getElementsByClassName 函数
+ */
+function createProxyGetElementsByClassName(querySelectorAll: (selectors: string) => NodeListOf<Element>) {
+  return function getElementsByClassName(className: string): HTMLCollectionOf<Element> {
+    return querySelectorAll(`.${className}`) as unknown as HTMLCollectionOf<Element>;
+  };
+}
+
+/**
+ * 创建代理 getElementsByTagName 方法
+ * @description 重写 getElementsByTagName 方法，支持容器隔离
+ * @param rawDocument - 原始 document 对象
+ * @param app - 应用实例
+ * @param querySelectorAll - 代理的 querySelectorAll 方法
+ * @returns getElementsByTagName 函数
+ */
+function createProxyGetElementsByTagName(
+  rawDocument: Document,
+  app: BaseModel,
+  querySelectorAll: (selectors: string) => NodeListOf<Element>,
+) {
+  return function getElementsByTagName<K extends keyof HTMLElementTagNameMap>(
+    tagName: K,
+  ): HTMLCollectionOf<HTMLElementTagNameMap[K]> {
+    if (isSpecialElementTag(tagName) || (!app?.showSourceCode && tagName.toLowerCase() === 'script')) {
+      return rawDocument.getElementsByTagName(tagName);
     }
-    return querySelectorAllNew(key);
-  }
-  function getElementsByNameNew(key: string) {
-    return querySelectorAllNew(`[name=${key}]`);
-  }
+
+    return querySelectorAll(tagName) as unknown as HTMLCollectionOf<HTMLElementTagNameMap[K]>;
+  };
+}
+
+/**
+ * 创建代理 getElementsByName 方法
+ * @description 重写 getElementsByName 方法，支持容器隔离
+ * @param querySelectorAll - 代理的 querySelectorAll 方法
+ * @returns getElementsByName 函数
+ */
+function createProxyGetElementsByName(querySelectorAll: (selectors: string) => NodeListOf<Element>) {
+  return function getElementsByNameNew(name: string): NodeListOf<HTMLElement> {
+    return querySelectorAll(`[name="${name}"]`) as unknown as NodeListOf<HTMLElement>;
+  };
+}
+
+/**
+ * 创建代理 document 方法映射
+ * @description 创建所有需要代理的 document 方法
+ * @param rawDocument - 原始 document 对象
+ * @param app - 应用实例
+ * @param proxyBody - 代理 body 对象
+ * @returns 代理方法映射对象
+ */
+function createProxyMethodMap(rawDocument: Document, app: BaseModel, proxyBody: unknown) {
+  const createElement = createElementWithAppKey(rawDocument, app);
+  const querySelector = createProxyQuerySelector(rawDocument, app, proxyBody);
+  const querySelectorAll = createProxyQuerySelectorAll(rawDocument, app);
+  const getElementById = createProxyGetElementById(rawDocument, querySelector);
+  const getElementsByClassName = createProxyGetElementsByClassName(querySelectorAll);
+  const getElementsByTagName = createProxyGetElementsByTagName(rawDocument, app, querySelectorAll);
+  const getElementsByName = createProxyGetElementsByName(querySelectorAll);
+
+  return {
+    createElement: createElement.bind(rawDocument),
+    querySelector: querySelector.bind(rawDocument),
+    querySelectorAll: querySelectorAll.bind(rawDocument),
+    getElementById: getElementById.bind(rawDocument),
+    getElementsByClassName: getElementsByClassName.bind(rawDocument),
+    getElementsByTagName: getElementsByTagName.bind(rawDocument),
+    getElementsByName: getElementsByName.bind(rawDocument),
+  };
+}
+
+/**
+ * 创建代理 document 对象
+ * @description 为微前端应用创建隔离的 document 代理对象，实现 DOM 隔离
+ *
+ * 主要功能：
+ * 1. 代理 body 对象，支持 ShadowRoot 环境
+ * 2. 重写 DOM 查询方法，实现容器隔离
+ * 3. 标记创建的元素归属，便于应用管理
+ * 4. 支持特殊元素标签的原生访问
+ *
+ * @param rawDocument - 原始 document 对象
+ * @param app - 微前端应用实例
+ * @returns Document - 代理后的 document 对象
+ *
+ * @example
+ * ```typescript
+ * const proxyDoc = createProxyDocument(document, appInstance);
+ * // 使用代理后的 document 进行 DOM 操作
+ * const element = proxyDoc.createElement('div');
+ * const result = proxyDoc.querySelector('.my-class');
+ * ```
+ */
+export const createProxyDocument = (rawDocument: Document, app: BaseModel): Document => {
+  const fakeDocument = {};
+  const proxyBody = createProxyBody(rawDocument, app);
+  const methodMap = createProxyMethodMap(rawDocument, app, proxyBody);
+
   return new Proxy(fakeDocument, {
     get(_, key: string | symbol) {
-      if (key === 'createElement') {
-        return createElement.bind(rawDocument);
-      }
-      if (key === 'querySelector') {
-        return querySelectorNew.bind(rawDocument);
-      }
-      if (key === 'querySelectorAll') {
-        return querySelectorAllNew.bind(rawDocument);
-      }
-      if (key === 'getElementById') {
-        return getElementByIdNew.bind(rawDocument);
-      }
-      if (key === 'getElementsByClassName') {
-        return getElementsByClassName.bind(rawDocument);
-      }
-      if (key === 'getElementsByTagName') {
-        return getElementsByTagName.bind(rawDocument);
-      }
-      if (key === 'getElementsByName') {
-        return getElementsByNameNew.bind(rawDocument);
-      }
       if (key === 'body') {
         return proxyBody;
       }
-      const result = Reflect.get(rawDocument, key);
-      if (typeof result === 'function') {
-        return result.bind(rawDocument);
+
+      if (typeof key === 'string' && key in methodMap) {
+        return methodMap[key as keyof typeof methodMap];
       }
-      return result;
+
+      // 默认处理：获取原始 document 的属性或方法
+      const result = Reflect.get(rawDocument, key);
+      return typeof result === 'function' ? result.bind(rawDocument) : result;
     },
-  });
+  }) as Document;
 };

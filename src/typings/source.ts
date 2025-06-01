@@ -1,56 +1,80 @@
-/*
- * Tencent is pleased to support the open source community by making
- * 蓝鲸智云PaaS平台 (BlueKing PaaS) available.
- *
- * Copyright (C) 2021 THL A29 Limited, a Tencent company.  All rights reserved.
- *
- * 蓝鲸智云PaaS平台 (BlueKing PaaS) is licensed under the MIT License.
- *
- * License for 蓝鲸智云PaaS平台 (BlueKing PaaS):
- *
- * ---------------------------------------------------
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the "Software"), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
- * to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions of
- * the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
- * THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
- * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
- * IN THE SOFTWARE.
- */
 /**
- * 接口定义：样式选项
+ * 资源加载相关类型定义
+ * @description 定义了样式、脚本等资源的配置选项和相关类型
+ */
+
+/**
+ * 样式资源配置选项接口
+ * @description 定义样式文件的加载配置和属性信息
  */
 export interface IStyleOption {
-  code: string; // 样式代码
-  fromHtml: boolean; // 是否来自 HTML
-  initial?: boolean; // 是否初始样式
-  prefetch?: boolean; // 是否预取样式
-  preload?: boolean; // 是否预加载样式
-  url?: string; // 样式文件的 URL
+  /** 样式代码内容 */
+  code: string;
+  /** 是否来自 HTML 页面内联样式 */
+  fromHtml: boolean;
+  /** 是否为初始样式 */
+  initial?: boolean;
+  /** 是否预取样式资源 */
+  prefetch?: boolean;
+  /** 是否预加载样式资源 */
+  preload?: boolean;
+  /** 样式文件的 URL 地址 */
+  url?: string;
 }
 
+/**
+ * 脚本资源配置选项接口
+ * @description 定义脚本文件的加载配置和属性信息
+ */
 export interface IScriptOption {
-  async: boolean; // 是否为异步脚本
-  code: string; // 脚本代码
-  defer: boolean; // 是否为延迟脚本
-  fromHtml: boolean; // 是否从 HTML 中提取
-  initial?: boolean; // 是否为初始脚本
-  isModule: boolean; // 是否为模块类型脚本
-  url?: string; // 脚本的 URL 地址
+  /** 是否为异步加载脚本 */
+  async: boolean;
+  /** 脚本代码内容 */
+  code: string;
+  /** 是否为延迟执行脚本 */
+  defer: boolean;
+  /** 是否从 HTML 页面中提取的脚本 */
+  fromHtml: boolean;
+  /** 是否为初始脚本 */
+  initial?: boolean;
+  /** 是否为 ES6 模块类型脚本 */
+  isModule: boolean;
+  /** 脚本文件的 URL 地址 */
+  url?: string;
 }
 
+/**
+ * CSS 属性键名常量
+ * @description 用于标识 CSS 样式元素的属性名
+ */
 export const CSS_ATTRIBUTE_KEY = 'id';
 
+/**
+ * CSS 规则类型枚举
+ * @description 定义了不同类型的 CSS 规则类型常量
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/CSSRule/type
+ */
 export enum CssRuleEnum {
-  MEDIA_RULE = 4,
+  /** 样式规则 */
   STYLE_RULE = 1,
+  /** @media 媒体查询规则 */
+  MEDIA_RULE = 4,
+  /** @supports 规则 */
   SUPPORTS_RULE = 12,
 }
-type ValueOf<T> = T[keyof T];
+
+/**
+ * 工具类型：获取对象所有值的联合类型
+ * @template T - 要提取值类型的对象类型
+ * @description 提取对象类型中所有属性值的联合类型
+ */
+export type ValueOf<T> = T[keyof T];
+
+/**
+ * Document 事件监听器类型
+ * @description 定义了 Document 对象事件监听器的函数签名
+ * @param this - Document 对象上下文
+ * @param ev - Document 事件映射中任意事件类型的值
+ * @returns 任意类型的返回值
+ */
 export type DocumentEventListener = (this: Document, ev: ValueOf<DocumentEventMap>) => any;

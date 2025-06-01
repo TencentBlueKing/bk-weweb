@@ -24,64 +24,85 @@
  * IN THE SOFTWARE.
  */
 
-import type { DocumentEventListener } from '../typings';
-// rewrite window funtion like settimeout setinterval ...
-export function rewriteWindowFunction(fakeWindow: Window & any): Record<string, CallableFunction> {
-  const windowEventLisenerMap = new Map<string, DocumentEventListener[]>();
-  const intervalTimerList: ReturnType<typeof setInterval>[] = [];
+// 扩展的 Window 类型
+export type FakeWindow = Window & Record<string, unknown>;
+
+/**
+ * 重写 Window 对象的方法，实现事件监听器和定时器的管理
+ * 用于微前端应用卸载时清理资源
+ */
+export function rewriteWindowFunction(fakeWindow: FakeWindow): Record<string, CallableFunction> {
+  // 存储事件监听器映射
+  const windowEventListenerMap = new Map<keyof WindowEventMap, EventListenerOrEventListenerObject[]>();
+  // 存储定时器列表
+  const intervalTimerList: number[] = [];
   const rawWindow = window;
   const { addEventListener, clearInterval, removeEventListener, setInterval } = window;
 
-  fakeWindow.addEventListener = (
-    type: string,
-    listener: DocumentEventListener,
+  // 重写 addEventListener 方法
+  fakeWindow.addEventListener = <K extends keyof WindowEventMap>(
+    type: K,
+    listener: EventListenerOrEventListenerObject,
     options?: AddEventListenerOptions | boolean,
   ): void => {
-    windowEventLisenerMap.set(type, [...(windowEventLisenerMap.get(type) || []), listener]);
+    windowEventListenerMap.set(type, [...(windowEventListenerMap.get(type) || []), listener]);
     addEventListener.call(rawWindow, type, listener, options);
   };
-  fakeWindow.removeEventListener = (
-    type: string,
-    listener: DocumentEventListener,
+
+  // 重写 removeEventListener 方法
+  fakeWindow.removeEventListener = <K extends keyof WindowEventMap>(
+    type: K,
+    listener: EventListenerOrEventListenerObject,
     options?: AddEventListenerOptions | boolean,
   ): void => {
-    const listenerList = windowEventLisenerMap.get(type);
+    const listenerList = windowEventListenerMap.get(type);
     if (listenerList?.length) {
       const index = listenerList.indexOf(listener);
       index > -1 && listenerList.splice(index, 1);
     }
     removeEventListener.call(rawWindow, type, listener, options);
   };
+
+  // 重写 setInterval 方法
   fakeWindow.setInterval = (
     handler: TimerHandler | string,
     timeout?: number | undefined,
-    ...args: any[]
-  ): ReturnType<typeof setInterval> => {
-    const timer = setInterval.call(rawWindow, handler as any, timeout, ...(args as []));
-    intervalTimerList.push(timer);
-    return timer;
+    ...args: unknown[]
+  ): number => {
+    const timer = setInterval(handler as TimerHandler, timeout, ...(args as []));
+    intervalTimerList.push(timer as number);
+    return timer as number;
   };
-  fakeWindow.clearInterval = (timer: ReturnType<typeof setInterval>) => {
+
+  // 重写 clearInterval 方法
+  fakeWindow.clearInterval = (timer: number) => {
     const index = intervalTimerList.indexOf(timer);
     index > -1 && intervalTimerList.splice(index, 1);
-    clearInterval.call(rawWindow, timer as any);
+    clearInterval.call(rawWindow, timer as unknown as NodeJS.Timeout);
   };
-  // reset all event listener & interval & timeout when unmount app
+
+  /**
+   * 重置窗口函数，清理所有事件监听器和定时器
+   * 在应用卸载时调用
+   */
   function resetWindowFunction() {
-    // clear window events listener
-    if (windowEventLisenerMap.size) {
-      windowEventLisenerMap.forEach((listenerList, type) => {
-        listenerList.forEach(listener => removeEventListener.call(rawWindow, type, listener));
+    // 清理窗口事件监听器
+    if (windowEventListenerMap.size) {
+      windowEventListenerMap.forEach((listenerList, type) => {
+        for (const listener of listenerList) {
+          removeEventListener.call(rawWindow, type, listener);
+        }
       });
-      windowEventLisenerMap.clear();
+      windowEventListenerMap.clear();
     }
-    // clear settimeout timers
+    // 清理定时器
     if (intervalTimerList.length) {
-      intervalTimerList.forEach(timer => {
+      for (const timer of intervalTimerList) {
         clearInterval.call(rawWindow, timer);
-      });
+      }
     }
   }
+
   return {
     resetWindowFunction,
   };
