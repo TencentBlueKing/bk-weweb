@@ -29,7 +29,14 @@ import type { BaseModel } from '../typings';
 
 type FetchOptions = Record<string, unknown>;
 
-/** 统一的资源获取方法，支持应用级别和全局级别的自定义fetch */
+/**
+ * 统一的资源获取方法，支持应用级别和全局级别的自定义fetch
+ * 优先级：应用级fetchSource > 全局fetchSource > 原生fetch
+ * @param url 要获取的资源URL
+ * @param options fetch请求选项，默认为空对象
+ * @param app 可选的应用实例，如果提供且有自定义fetchSource则优先使用
+ * @returns Promise<string> 返回资源内容的Promise，失败时返回空字符串
+ */
 export const fetchSource = async (url: string, options: FetchOptions = {}, app?: BaseModel): Promise<string> => {
   // 优先使用应用级别的自定义fetch方法
   if (typeof app?.fetchSource === 'function') {
