@@ -119,6 +119,8 @@ export interface BaseModel {
   url: string;
   /** 获取资源的函数 */
   fetchSource?: typeof fetchSource;
+  /** 传递给应用的数据 */
+  data: Record<string, unknown>;
 
   /** 激活应用 */
   activated<T = unknown>(container: ContainerType, callback?: CallbackFunction<T>): void;

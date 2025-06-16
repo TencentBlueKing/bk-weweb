@@ -95,6 +95,10 @@ const GLOBAL_CONTEXT_VARIABLES = [
   'valueOf',
   'WeakMap',
   'WeakSet',
+  'requestAnimationFrame',
+  'cancelAnimationFrame',
+  'requestIdleCallback',
+  'cancelIdleCallback',
 ] as const;
 
 /**

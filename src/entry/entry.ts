@@ -26,7 +26,7 @@
 import { appCache } from '../cache/app-cache';
 import { MicroAppModel } from '../mode/app';
 import { MicroInstanceModel } from '../mode/instance';
-import { addUrlProtocol, fillUpPath, isJsonpUrl, randomUrl } from '../utils/common';
+import { addUrlProtocol, fillUpPath, randomUrl } from '../utils/common';
 import { fetchSource } from '../utils/fetch';
 import { collectSource } from '../utils/load-source';
 import { Script } from './script';
@@ -248,7 +248,7 @@ export class EntrySource {
   private shouldIgnoreScript = (script: HTMLScriptElement): boolean => {
     return (
       script.hasAttribute('ignore') ||
-      (script.type !== 'module' && isJsonpUrl(script.getAttribute('src'))) ||
+      // (script.type !== 'module' && isJsonpUrl(script.getAttribute('src'))) ||
       (script.hasAttribute('type') && !SCRIPT_TYPE_NAMES.includes(script.type as ScriptTypeName))
     );
   };

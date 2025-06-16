@@ -58,7 +58,7 @@ export class MicroAppModel implements BaseModel {
   private state: ValueOfAppState = AppState.UNSET;
 
   container?: ContainerType;
-  data: Record<string, unknown>;
+  public data: Record<string, unknown>;
   iframe: HTMLIFrameElement | null = null;
   initSource: SourceType;
   isModuleApp = false;
@@ -247,22 +247,30 @@ export class MicroAppModel implements BaseModel {
       fragment.appendChild(node);
     }
 
+    container.innerHTML = '';
     container.appendChild(fragment);
   }
 
   /** 设置节点属性 */
   private setupNodeProperties(node: Node): void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const app = this;
     const nodeWithProps = node as Node & {
       __KEEP_ALIVE__?: string;
       __BK_WEWEB_APP_KEY__?: string;
       data?: unknown;
     };
 
-    if (this.keepAlive) {
-      nodeWithProps.__KEEP_ALIVE__ = this.name;
-    }
-    nodeWithProps.__BK_WEWEB_APP_KEY__ = this.name;
-    nodeWithProps.data = this.data;
+    nodeWithProps.__BK_WEWEB_APP_KEY__ = this.appCacheKey;
+
+    // 设置 ownerDocument 属性，这是关键的沙盒功能
+    Object.defineProperties(node, {
+      ownerDocument: {
+        get() {
+          return app.sandBox?.rawDocument;
+        },
+      },
+    });
   }
 
   /** 创建iframe元素 */
@@ -278,7 +286,8 @@ export class MicroAppModel implements BaseModel {
 
   /** 构建iframe源地址 */
   private buildIframeSrc(url: URL): string {
-    return `${url.protocol}//${url.host}`;
+    const isChrome = this.isChromeUserAgent();
+    return `${isChrome ? IFRAME_CONSTANTS.BLANK_ORIGIN : location.origin}${url.pathname || '/'}${url.search}${url.hash}`;
   }
 
   /** 检查是否为Chrome浏览器 */
@@ -288,32 +297,41 @@ export class MicroAppModel implements BaseModel {
 
   /** 处理非Chrome浏览器iframe */
   private handleNonChromeIframe(iframe: HTMLIFrameElement, resolve: (iframe: HTMLIFrameElement) => void): void {
-    const iframeOnload = (): void => {
-      resolve(iframe);
-    };
-
-    if (iframe.contentDocument?.readyState === 'complete') {
-      iframeOnload();
-    } else {
-      iframe.addEventListener('load', iframeOnload);
-    }
+    // 其他浏览器在about:blank下会出现同源检测安全错误 换另一种方式来做location保持
+    const interval = setInterval(() => {
+      if (iframe.contentWindow && iframe.contentWindow.location.href !== IFRAME_CONSTANTS.BLANK_ORIGIN) {
+        iframe.contentWindow.stop();
+        iframe.contentDocument!.body.parentElement!.innerHTML = IFRAME_CONSTANTS.DEFAULT_HTML;
+        clearInterval(interval);
+        resolve(iframe);
+      }
+    }, IFRAME_CONSTANTS.POLLING_INTERVAL);
   }
 
   /** 渲染应用内容 */
   private renderAppContent(): void {
-    if (this.showSourceCode && this.source) {
-      this.container!.innerHTML = this.source.rawHtml || IFRAME_CONSTANTS.DEFAULT_HTML;
+    if (!this.source) return;
+
+    const clonedNode = this.source.html!.cloneNode(true);
+    const fragment = document.createDocumentFragment();
+
+    for (const node of Array.from(clonedNode.childNodes)) {
+      this.setupNodeProperties(node);
+      fragment.appendChild(node);
     }
+
+    this.container!.innerHTML = '';
+    this.container!.appendChild(fragment);
   }
 
   /** 检查是否需要重新加载 */
   private needsReload(): boolean {
-    return this.status === AppState.ERROR;
+    return this.status === AppState.ERROR || this.status === AppState.UNSET;
   }
 }
 
 export const createApp = (props: IAppModelProps): void => {
-  const app = new MicroAppModel(props);
-  appCache.setApp(app);
-  app.start().finally(() => app.onMount());
+  appCache.deleteApp(props.url);
+  const instance = new MicroAppModel(props);
+  appCache.setApp(instance);
 };

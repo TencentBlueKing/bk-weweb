@@ -208,10 +208,8 @@ export class MicroInstanceModel implements BaseModel {
   private setupContainer(): void {
     if (this.container) {
       this.container.innerHTML = '';
-      if (this.showSourceCode) {
-        const instanceWrapper = this.createInstanceWrapper();
-        this.container.appendChild(instanceWrapper);
-      }
+      const instanceWrapper = this.createInstanceWrapper();
+      this.container.appendChild(instanceWrapper);
     }
   }
 
@@ -233,9 +231,7 @@ export class MicroInstanceModel implements BaseModel {
   private renderInstance(): void {
     const scriptInfo = this.getScriptInfo();
     if (scriptInfo?.exportInstance?.render && this.container) {
-      const targetContainer = this.showSourceCode
-        ? (this.container.querySelector(`#${this.name}${WRAPPER_SUFFIX}`) as HTMLElement)
-        : (this.container as HTMLElement);
+      const targetContainer = this.container.querySelector(`#${this.name}${WRAPPER_SUFFIX}`) as HTMLElement;
 
       if (targetContainer) {
         scriptInfo.exportInstance.render(targetContainer, this.data);
@@ -253,7 +249,7 @@ export class MicroInstanceModel implements BaseModel {
 
   /** 检查是否需要重新加载 */
   private needsReload(): boolean {
-    return this.status === AppState.ERROR;
+    return this.status === AppState.ERROR || this.status === AppState.UNSET;
   }
 }
 

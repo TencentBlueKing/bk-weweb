@@ -165,6 +165,9 @@ export default class SandBox {
       },
     });
     rawWindow[this.windowSymbolKey] = this.proxyWindow as never;
+
+    // if (app.showSourceCode) {
+    // }
   }
 
   /** 处理代理对象的 get 操作 */

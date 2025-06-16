@@ -71,8 +71,9 @@ export async function loadApp(props: IAppModelProps): Promise<MicroAppModel> {
   if (!instance) {
     instance = new MicroAppModel(props);
     appCache.setApp(instance);
+  } else {
+    instance.data = props.data || instance.data || {};
   }
-
   await instance.start();
   return instance as MicroAppModel;
 }
@@ -96,7 +97,6 @@ export function loadInstance(props: IJsModelProps): Promise<MicroInstanceModel> 
       instance.start().then(() => resolve(instance as MicroInstanceModel));
       return;
     }
-
     // 如果实例正在挂载或未设置状态，等待状态变更
     if (instance.status in [AppState.MOUNTING, AppState.UNSET]) {
       const timer = setInterval(() => {
@@ -107,7 +107,7 @@ export function loadInstance(props: IJsModelProps): Promise<MicroInstanceModel> 
       }, STATUS_CHECK_INTERVAL);
       return;
     }
-
+    instance.data = props.data || instance.data || {};
     // 实例已存在且状态正常，直接返回
     resolve(instance as MicroInstanceModel);
   });
