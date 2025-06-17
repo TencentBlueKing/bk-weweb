@@ -55,7 +55,7 @@ export class Script {
   url: string | undefined;
 
   constructor({ async, code, defer, fromHtml, initial, isModule, url }: IScriptOption) {
-    this.code = code;
+    this.code = code?.replace(STRICT_MODE_REGEX, '');
     this.async = async;
     this.defer = defer;
     this.isModule = isModule;
@@ -98,12 +98,17 @@ export class Script {
 
       if (app instanceof MicroInstanceModel) {
         const globalWindow = app.scopeJs ? app.sandBox?.proxyWindow || window : window;
-        const exportProp = getGlobalProp(globalWindow);
+        // 判断是否是 iife var 的函数模块
+        const isIifeVar = !!this.code.replace(/\/\*[\s\S]*?\*\//g, '').match(/^\s*var\s/);
+        const exportProp = getGlobalProp(globalWindow, isIifeVar);
         if (exportProp) {
           this.exportInstance = (globalWindow as unknown as Record<string, unknown>)[exportProp];
           // window 下需清除全局副作用
           if (!app.scopeJs) {
-            delete (globalWindow as unknown as Record<string, unknown>)[exportProp];
+            const descriptor = Object.getOwnPropertyDescriptor(globalWindow, exportProp);
+            if (descriptor?.configurable) {
+              delete (globalWindow as unknown as Record<string, unknown>)[exportProp];
+            }
           }
         }
       }
@@ -120,7 +125,7 @@ export class Script {
       app.registerRunningApp();
 
       new Function('window', 'location', 'history', scopedCode)(
-        app.sandBox!.proxyWindow,
+        app.sandBox!.proxyWindow || window,
         isScopedLocation ? app.iframe!.contentWindow!.location : window.location,
         isScopedLocation ? app.iframe!.contentWindow!.history : window.history,
       );
