@@ -93,7 +93,7 @@ const routes: Array<RouteRecordRaw> = [
     name: 'vite',
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
-    path: '/vite',
+    path: '/vite/:pathMatch(.*)*',
   },
   {
     // which is lazy-loaded when the route is visited.

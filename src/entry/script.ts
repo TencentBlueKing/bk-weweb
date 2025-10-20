@@ -49,6 +49,7 @@ export class Script {
   defer = false;
   exportInstance?: unknown;
   fromHtml: boolean;
+  blobUrl?: string;
   initial: boolean;
   isModule = false;
   scoped: boolean;
@@ -63,6 +64,7 @@ export class Script {
     this.scoped = false;
     this.fromHtml = fromHtml ?? false;
     this.initial = initial ?? false;
+    this.blobUrl = undefined;
   }
 
   /** 执行脚本代码 */
@@ -76,21 +78,39 @@ export class Script {
       }
 
       const scopedCode = this.transformCode(app);
-
-      if (app.showSourceCode || this.isModule) {
+      if (this.isModule) {
+        app.registerRunningApp();
+        const scriptElement = document.createElement('script');
+        let blobUrl = '';
+        if (scriptElement.__BK_WEWEB_APP_KEY__) {
+          scriptElement.__BK_WEWEB_APP_KEY__ = undefined;
+        }
+        if (this.url) {
+          blobUrl = `${this.url.replace(/^\//, `${app.url}/`)}?key=${Date.now()}`;
+        } else {
+          const blob = new Blob([scopedCode], { type: 'text/javascript' });
+          blobUrl = URL.createObjectURL(blob);
+        }
+        scriptElement.src = blobUrl;
+        scriptElement.type = 'module';
+        if (needReplaceScriptElement) return scriptElement;
+        const needKeepAlive = !!app.keepAlive && !(app.container instanceof ShadowRoot);
+        const container = needKeepAlive ? document.head : app.container!;
+        setMarkElement(scriptElement, app, needKeepAlive);
+        container.appendChild(scriptElement);
+        URL.revokeObjectURL(blobUrl);
+      } else if (app.showSourceCode) {
         const scriptElement = document.createElement('script');
         if (scriptElement.__BK_WEWEB_APP_KEY__) {
           scriptElement.__BK_WEWEB_APP_KEY__ = undefined;
         }
         app.registerRunningApp();
         this.executeSourceScript(scriptElement, scopedCode);
-
         if (needReplaceScriptElement) return scriptElement;
-
         const needKeepAlive = !!app.keepAlive && !(app.container instanceof ShadowRoot);
-        const container = needKeepAlive ? document.head : app.container;
+        const container = needKeepAlive ? document.head : app.container!;
         setMarkElement(scriptElement, app, needKeepAlive);
-        container!.appendChild(scriptElement);
+        container.appendChild(scriptElement);
       } else {
         this.executeMemoryScript(app, scopedCode);
         if (needReplaceScriptElement) return document.createComment('【bk-weweb】dynamic script');
@@ -147,7 +167,7 @@ export class Script {
 
   /** 获取脚本内容 */
   async getCode(app?: BaseModel): Promise<string> {
-    if (this.code.length || !this.url) {
+    if (this.code.length || !this.url || this.isModule) {
       return this.code;
     }
 
@@ -176,14 +196,19 @@ export class Script {
 
   /** 转换脚本内容 */
   transformCode(app: BaseModel): string {
-    const sourceMapUrl = '';
-
+    const sourceMapUrl = this.url ? `//# sourceURL=${this.url}\n` : '';
     if (app.sandBox) {
       if (this.isModule) {
-        return ` with(window.${app.sandBox.windowSymbolKey}){
-          ;${this.code}\n
-          ${sourceMapUrl}
-        }`;
+        if (this.url) {
+          return this.code;
+        }
+        const importList = this.code.match(/import\s*.*(?:from)?\s*"([^"]+)";/gm);
+        for (const item of importList || []) {
+          this.code = this.code.replace(item, item.replace(/"\//, `"${app.url}/`).replace(/"$/, `?key=${Date.now()}"`));
+        }
+        return `
+        ${this.code};
+        `;
       }
       if (app.showSourceCode) {
         return `;(function(window, self, globalThis){
@@ -192,8 +217,8 @@ export class Script {
                     ${this.code}\n
                     ${sourceMapUrl}
                   }
-                }).call(window.${app.sandBox.windowSymbolKey},
-                  window.${app.sandBox.windowSymbolKey}, window.${app.sandBox.windowSymbolKey}, window.${app.sandBox.windowSymbolKey});`;
+                }).call(window['${app.sandBox.windowSymbolKey}'],
+                  window['${app.sandBox.windowSymbolKey}'], window['${app.sandBox.windowSymbolKey}'], window['${app.sandBox.windowSymbolKey}']);`;
       }
       return `
           with(window) {
@@ -283,7 +308,9 @@ export async function execAppScripts(app: BaseModel): Promise<void> {
   // }
 
   const appScriptList = Array.from(app.source!.scripts.values()).filter(script => script.fromHtml || script.initial);
-  const commonList = appScriptList.filter(script => (!script.async && !script.defer) || script.isModule);
+  const commonList = appScriptList.filter(
+    script => (!script.async && !script.defer) || (script.isModule && !script.fromHtml),
+  );
 
   // 保证同步脚本和module类型最先执行
   await Promise.all(commonList.map(script => script.getCode(app)));

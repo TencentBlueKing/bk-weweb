@@ -38,7 +38,7 @@ import {
   WINDOW_ALIAS_LIST,
   WINDOW_WHITE_LIST,
 } from '../typings';
-import { random } from '../utils/common';
+// import { random } from '../utils/common';
 import { windowNativeFuncMap } from './cache';
 import { createProxyDocument } from './document';
 import { rewriteDocumentAndBodyEvent } from './event';
@@ -107,8 +107,8 @@ export default class SandBox {
     this.resetWindowFunction = resetWindowFunction;
 
     // 生成唯一的 window 标识键
-    const appIdentifier = (app.name || app.appCacheKey).replace(/[-,:~'"]/g, '_');
-    this.windowSymbolKey = `__${appIdentifier}_${random(10)}__` as keyof Window;
+    // const appIdentifier = (app.name || app.appCacheKey).replace(/[-,:~'"]/g, '_');
+    this.windowSymbolKey = `${app.name || app.appCacheKey}` as keyof Window;
 
     // 创建 window 代理对象
     this.proxyWindow = new Proxy(this.fakeWindow, {

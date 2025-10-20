@@ -160,7 +160,12 @@ function createOverriddenAppendChild() {
     }
 
     // 使用元素处理器进行常规处理
-    return elementAppendHandler(this, newChild, bodyAppendChild as DOMMethod) as T;
+    const node = elementAppendHandler(this, newChild, bodyAppendChild as DOMMethod);
+
+    if ((node as unknown as HTMLElement)?.tagName === 'STYLE') {
+      (node as unknown as HTMLElement).insertAdjacentElement = createOverriddenInsertAdjacentElement();
+    }
+    return node as T;
   };
 }
 
@@ -216,6 +221,18 @@ function createOverriddenRemoveChild() {
     }
 
     return oldChild;
+  };
+}
+const insertAdjacentElement = createOverriddenInsertAdjacentElement();
+
+function createOverriddenInsertAdjacentElement() {
+  return function (this: HTMLElement, where: InsertPosition, element: Element): Element | null {
+    const node = elementAppendHandler(this, element, headAppendChild as DOMMethod) as Element | null;
+    // vite项目使用 如果节点是样式元素，则重写 insertAdjacentElement 方法
+    if ((node as unknown as HTMLElement)?.tagName === 'STYLE') {
+      (node as unknown as HTMLElement).insertAdjacentElement = insertAdjacentElement;
+    }
+    return node;
   };
 }
 
@@ -287,6 +304,5 @@ export function resetBodyAndHeaderMethods(): void {
   HTMLHeadElement.prototype.appendChild = headAppendChild;
   HTMLHeadElement.prototype.insertBefore = headInsertBefore;
   HTMLHeadElement.prototype.removeChild = headRemoveChild;
-
   hasRewrite = false;
 }

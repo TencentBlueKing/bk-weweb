@@ -29,6 +29,8 @@
  * @description 为微前端应用创建代理 document 对象，实现 DOM 隔离和沙箱环境
  */
 
+import { fillUpPath } from '../utils';
+
 import type { BaseModel } from '../typings/model';
 
 /**
@@ -149,6 +151,18 @@ function createElementWithAppKey(rawDocument: Document, app: BaseModel) {
 
     // 为元素标记所属应用
     (element as HTMLElement & { [APP_KEY_PROPERTY]: string })[APP_KEY_PROPERTY] = app.appCacheKey;
+
+    // 处理图片元素的 src 属性
+    if (element instanceof HTMLImageElement) {
+      Object.defineProperty(element, 'src', {
+        get() {
+          return element.getAttribute('src');
+        },
+        set(value) {
+          element.setAttribute('src', fillUpPath(value, app.url));
+        },
+      });
+    }
 
     return element;
   };

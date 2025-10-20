@@ -18,7 +18,7 @@
     </button>
     <p>
       Edit
-      <code>components/HelloWorld.vue</code> to test HMR
+      <code>components/HelloWorld.vue</code> to test ddd
     </p>
   </div>
 

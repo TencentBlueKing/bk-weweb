@@ -9,21 +9,22 @@
   import { activated, deactivated, loadApp } from '../../../../src/index';
   const props = defineProps<{
     id: string;
-    keepAlive?: boolean;
+    keepAlive?: true;
     scopeCss?: boolean;
     scopeLocation?: boolean;
     setShodowDom?: boolean;
     showSourceCode?: boolean;
     url: string;
+    data: Record<string, unknown>;
   }>();
   const instanceWrap = ref<HTMLElement>();
   onMounted(async () => {
     await loadApp({
-      data: {},
+      data: props.data || {},
       id: props.id,
       keepAlive: false,
       scopeCss: true,
-      scopeLocation: true,
+      scopeLocation: false,
       setShodowDom: false,
       showSourceCode: true,
       url: props.url,

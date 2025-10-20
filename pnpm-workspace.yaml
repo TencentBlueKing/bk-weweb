@@ -2,3 +2,4 @@ packages:
   - 'src/*'
   - '!**/examples/**'
   - '!**/docs/**'
+  - 'wikis/*'

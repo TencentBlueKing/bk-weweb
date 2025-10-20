@@ -1,6 +1,6 @@
 {
   "name": "@blueking/bk-weweb",
-  "version": "0.0.35-beta.9",
+  "version": "0.0.35-beta.10",
   "description": "bk micro frontend web",
   "private": false,
   "main": "dist/index.esm.js",
@@ -36,8 +36,12 @@
   "publishConfig": {
     "access": "public"
   },
-  "keywords": ["custom micro web"],
-  "files": ["dist"],
+  "keywords": [
+    "custom micro web"
+  ],
+  "files": [
+    "dist"
+  ],
   "author": "bk fe",
   "license": "MIT",
   "simple-git-hooks": {
@@ -62,6 +66,7 @@
     "tslib": "^2.6.3",
     "tsup": "^8.1.0",
     "typescript": "^5.5.3",
+    "vite": "^7.1.9",
     "vue-eslint-parser": "^9.4.3"
   },
   "engines": {

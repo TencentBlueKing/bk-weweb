@@ -25,11 +25,17 @@
  */
 import vue from '@vitejs/plugin-vue';
 import { defineConfig } from 'vite';
+import wewebVitePlugin from '../../../src/vite/helper';
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue()],
-  // publicDir: 'http://localhost:4001',
+  base: '/',
   server: {
     port: 4001,
+    hmr: {
+      host: 'localhost',
+      port: 4001,
+    },
   },
+  plugins: [wewebVitePlugin({ appKey: 'vite' }), vue()],
+  // publicDir: 'http://localhost:4001',
 });
