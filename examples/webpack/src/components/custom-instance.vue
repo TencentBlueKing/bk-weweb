@@ -14,7 +14,7 @@
     keepAlive?: boolean;
     scopeCss?: boolean;
     scopeLocation?: boolean;
-    setShodowDom?: boolean;
+    setShadowDom?: boolean;
     showSourceCode?: boolean;
     url: string;
   }>();

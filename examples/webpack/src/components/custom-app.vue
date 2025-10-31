@@ -12,7 +12,7 @@
     keepAlive?: true;
     scopeCss?: boolean;
     scopeLocation?: boolean;
-    setShodowDom?: boolean;
+    setShadowDom?: boolean;
     showSourceCode?: boolean;
     url: string;
     data: Record<string, unknown>;
@@ -25,7 +25,7 @@
       keepAlive: false,
       scopeCss: true,
       scopeLocation: false,
-      setShodowDom: false,
+      setShadowDom: false,
       showSourceCode: true,
       url: props.url,
     });

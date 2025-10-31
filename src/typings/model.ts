@@ -30,7 +30,7 @@ export interface IComponentProps {
   /** 是否共享主应用路由 */
   [WewebCustomAttrs.scopeLocation]?: boolean;
   /** 是否使用 ShadowDOM */
-  [WewebCustomAttrs.setShodowDom]?: boolean;
+  [WewebCustomAttrs.setShadowDom]?: boolean;
   /** 是否显示源码 */
   [WewebCustomAttrs.showSourceCode]?: boolean;
   /** 应用URL */
@@ -62,7 +62,7 @@ export interface IAppModelProps extends IBaseModelProps {
   /** 是否共享主应用路由 */
   [WewebCustomAttrs.scopeLocation]?: boolean;
   /** 是否使用 ShadowDOM */
-  [WewebCustomAttrs.setShodowDom]?: boolean;
+  [WewebCustomAttrs.setShadowDom]?: boolean;
   /** 是否显示源码 */
   [WewebCustomAttrs.showSourceCode]?: boolean;
   /** 容器元素 */

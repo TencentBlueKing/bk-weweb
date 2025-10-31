@@ -21,7 +21,7 @@
         keepAlive: this.keepAlive,
         scopeCss: true,
         scopeLocation: true,
-        setShodowDom: this.isShadowDom,
+        setShadowDom: this.isShadowDom,
         showSourceCode: true,
         url: 'https://www.google.com.hk/',
       });

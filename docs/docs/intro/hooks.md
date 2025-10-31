@@ -1,11 +1,11 @@
 ### bk-weweb hooks
+
 > bk-weweb 提供了一套用于用户自定义适应自己项目环境的微前端框架的函数，使用这些函数可以帮助您创建 例如 react vue各个版本下微前端组件
 > 介于浏览器不同版本上的兼容性 以及传递数据保存数据引用 我们强烈推荐使用这些函数来创建自己的微前端框架组件 而不是使用系统自带的bk-weweb标签
 
 #### 示例 vue3 自定义微应用容器
 
 [更多示例请查看](https://www.npmjs.com/package/@blueking/bk-weweb)
-
 
 ```javascript
 <template>
@@ -27,10 +27,10 @@ export default defineComponent({
           showSourceCode: true,
           scopeCss: true,
           scopeLocation: true,
-          setShodowDom: true,
+          setShadowDom: true,
           keepAlive: false,
           data: {
-            
+
           }
         })
       mount(appKey, instanceWrap.value)
@@ -111,41 +111,45 @@ export default defineComponent({
 - #### load
   > 加载子应用或者子模块 传递的参数与前面介绍的两种模式所需的参数一致
 
-  ##### 参数类型：
-  ```javascript
-  interface IModleProps {
-    // entry mode js | config | html 默认 html
-    [ObserveAttrs.mode]?: WewebMode;
-    // url 必选
-    [ObserveAttrs.url]: string;
-    // 是否是预加载
-    isPreLoad?: boolean;
-    id?: string | null;
-    container?: HTMLElement | ShadowRoot | null;
-    // 是否启用样式隔离 默认隔离
-    [ObserveAttrs.scopeCss]?: boolean;
-    // 是否使用沙盒隔离 默认隔离
-    [ObserveAttrs.scopeJs]?: boolean;
-    // 是否缓存dom
-    [ObserveAttrs.keepAlive]?: boolean;
-    // 是否在dom上显示源码 默认不显示 内存执行
-    [ObserveAttrs.showSourceCode]?: boolean;
-    // 是否共享主应用路由
-    [ObserveAttrs.scopeLocation]?: boolean;
-    // 是否使用shadowDom
-    [ObserveAttrs.setShodowDom]?: boolean;
-    // 传递给子应用的数据 默认保存
-    [ObserveAttrs.data]?: Record<string, unknown>;
-    // 初始化source 如 ['http://www.hostname.com/a.js', 'http://www.hostname.com/b.css']
-    initSource?: SourceType
-  }
-  export type SourceFuncType = () => Promise<string[]>;
-  export type SourceType = string[] | SourceFuncType;
-  ```
+##### 参数类型：
+
+```javascript
+interface IModleProps {
+  // entry mode js | config | html 默认 html
+  [ObserveAttrs.mode]?: WewebMode;
+  // url 必选
+  [ObserveAttrs.url]: string;
+  // 是否是预加载
+  isPreLoad?: boolean;
+  id?: string | null;
+  container?: HTMLElement | ShadowRoot | null;
+  // 是否启用样式隔离 默认隔离
+  [ObserveAttrs.scopeCss]?: boolean;
+  // 是否使用沙盒隔离 默认隔离
+  [ObserveAttrs.scopeJs]?: boolean;
+  // 是否缓存dom
+  [ObserveAttrs.keepAlive]?: boolean;
+  // 是否在dom上显示源码 默认不显示 内存执行
+  [ObserveAttrs.showSourceCode]?: boolean;
+  // 是否共享主应用路由
+  [ObserveAttrs.scopeLocation]?: boolean;
+  // 是否使用shadowDom
+  [ObserveAttrs.setShadowDom]?: boolean;
+  // 传递给子应用的数据 默认保存
+  [ObserveAttrs.data]?: Record<string, unknown>;
+  // 初始化source 如 ['http://www.hostname.com/a.js', 'http://www.hostname.com/b.css']
+  initSource?: SourceType
+}
+export type SourceFuncType = () => Promise<string[]>;
+export type SourceType = string[] | SourceFuncType;
+```
+
 - #### loadApp
-  > 加载一个子应用 
+
+  > 加载一个子应用
 
   ##### 参数类型：
+
   ```javascript
   interface IAppModleProps {
     // url 必选
@@ -165,7 +169,7 @@ export default defineComponent({
     // 是否共享主应用路由
     [ObserveAttrs.scopeLocation]?: boolean;
     // 是否使用shadowDom
-    [ObserveAttrs.setShodowDom]?: boolean;
+    [ObserveAttrs.setShadowDom]?: boolean;
     // 传递给子应用的数据 默认保存
     [ObserveAttrs.data]?: Record<string, unknown>;
     // 初始化source 如 ['http://www.hostname.com/a.js', 'http://www.hostname.com/b.css']
@@ -174,10 +178,13 @@ export default defineComponent({
   export type SourceFuncType = () => Promise<string[]>;
   export type SourceType = string[] | SourceFuncType;
   ```
+
 - #### loadInstance
-  > 加载一个微模块 
+
+  > 加载一个微模块
 
   ##### 参数类型：
+
   ```javascript
   interface IAppModleProps {
     // url 必选
@@ -203,37 +210,46 @@ export default defineComponent({
   export type SourceFuncType = () => Promise<string[]>;
   export type SourceType = string[] | SourceFuncType;
   ```
+
 - #### mount
+
   > 挂载子应用 或者 子模块 执行时机在laod hook之后
 
   ##### 类型：
+
   ```javascript
   export declare function mount<T>(
-    appKey: string, // 子应用和子模块的id 
+    appKey: string, // 子应用和子模块的id
     container?: HTMLElement | ShadowRoot, // 子应用和子模块需要挂载的容器
     callback?: <M extends BaseModel>(instance: M, exportInstance?: T) => void // 挂载之后触发的回调
     ): void;
   ```
 
 - #### unmount
-  > 删除退出 子应用 或者 子模块 
- ```javascript
-  export declare function unmount(appKey: string): void;
-  ```
+  > 删除退出 子应用 或者 子模块
+
+```javascript
+ export declare function unmount(appKey: string): void;
+```
 
 - #### unload
   > 删除系统内缓存的 对应子应用 或者 子模块资源
- ```javascript
-  export declare function unload(url: string): void;
-  ```
+
+```javascript
+ export declare function unload(url: string): void;
+```
+
 - #### activated
   > 已经加载过的应用或模块 再次使用 如果是第一加载则直接与mount 等效
- ```javascript
-  import { BaseModel } from '../typings';
-  export declare function activated<T>(appKey: string, container: HTMLElement | ShadowRoot, callback?: <M extends BaseModel>(instance: M, exportInstance?: T) => void): void;
-  ```
+
+```javascript
+ import { BaseModel } from '../typings';
+ export declare function activated<T>(appKey: string, container: HTMLElement | ShadowRoot, callback?: <M extends BaseModel>(instance: M, exportInstance?: T) => void): void;
+```
+
 - #### deactivated
   > 清除对应已经加载过的应用后模块 已缓存的资源不会清除
- ```javascript
-  export declare function deactivated(appKey: string): void;
-  ```
+
+```javascript
+ export declare function deactivated(appKey: string): void;
+```

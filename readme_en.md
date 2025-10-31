@@ -9,17 +9,18 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/TencentBlueKing/bk-weweb/pulls)
 
 English | [简体中文](readme.md)
+
 ## Overview
 
 ️🔧 BlueKing bk-weweb is a cross-framework, dependency-free, scalable, lightweight micro-front-end framework tool that supports micro-applications and micro-modules without any intrusion
 
 ## Features
 
-* [Basic] supports multi-application, multi-module, and mixed application
-* [Basic] bk-weweb webcomponent
-* [Basic] rich and simple hooks
-* [Basic] Support preloading resources
-* [Basic] Share cache resources between the main application and sub-applications and sub-modules
+- [Basic] supports multi-application, multi-module, and mixed application
+- [Basic] bk-weweb webcomponent
+- [Basic] rich and simple hooks
+- [Basic] Support preloading resources
+- [Basic] Share cache resources between the main application and sub-applications and sub-modules
 
 ## Getting started
 
@@ -35,7 +36,7 @@ $ npm install @blueking/bk-weweb
 
 **Basic usage**
 
-````javascript
+```javascript
 import '@blueking/bk-weweb'
 
 // 微应用
@@ -43,11 +44,12 @@ import '@blueking/bk-weweb'
 
 // 微模块
 <bk-weweb mode='js' url='http://xxx.xx.x.js' />
-````
+```
 
 **Custom microapp container**
 
 #### 1. Custom microapp container
+
 ```javascript
 <template>
   <div class="bk-weweb">
@@ -68,10 +70,10 @@ export default defineComponent({
           showSourceCode: true,
           scopeCss: true,
           scopeLocation: true,
-          setShodowDom: true,
+          setShadowDom: true,
           keepAlive: false,
           data: {
-            
+
           }
         })
       mount(appKey, instanceWrap.value)
@@ -156,6 +158,7 @@ export default defineComponent({
 - [BlueKing Community Edition Exchange Group](https://jq.qq.com/?_wv=1027&k=5zk8F7G)
 
 ## BlueKing Community
+
 - [BKUI-VUE2](https://github.com/TencentBlueKing/bkui-vue2)：BlueKing Vue2.x version component library.
 - [BKUI-VUE3](https://github.com/TencentBlueKing/bkui-vue3)：BlueKing Vue3.x version component library.
 - [BK-CMDB](https://github.com/Tencent/bk-cmdb): BlueKing CMDB is an enterprise-level management platform designed for assets and applications.
@@ -164,7 +167,8 @@ export default defineComponent({
 - [BK-PaaS](https://github.com/Tencent/bk-paas): BlueKing PaaS is an open development platform that allows developers to efficiently create, develop, set up, and manage SaaS apps.
 - [BK-SOPS](https://github.com/Tencent/bk-sops): BlueKing SOPS is a system that features workflow arrangement and execution using a graphical interface. It's a lightweight task scheduling and arrangement SaaS product of the Blueking system.
 - [BK-JOB](https://github.com/Tencent/bk-job):BlueKing JOB is a set of operation and maintenance script management platform with the ability to handle a large number of tasks concurrently.
-- 
+-
+
 ## Contributing
 
 If you have good comments or suggestions, please send us Issues or Pull Requests to contribute to the Blue Whale open source community.

@@ -7,13 +7,13 @@
     <!-- <CustomWebComponentApp/> -->
     <!-- <CustomWebComponentInstance/> -->
     <!-- <CustomIframe key="test2" appKey="test2"/> -->
-    <!-- <bk-weweb :showSourceCode="true" setShodowDom="false" id="badu2" url="https://www.baidu.com/" /> -->
-    <!-- <bk-weweb :showSourceCode="true" setShodowDom="true" id="qq" url="https://v.qq.com/" /> -->
+    <!-- <bk-weweb :showSourceCode="true" setShadowDom="false" id="badu2" url="https://www.baidu.com/" /> -->
+    <!-- <bk-weweb :showSourceCode="true" setShadowDom="true" id="qq" url="https://v.qq.com/" /> -->
     <!-- <bk-weweb id="sdfsdf" class="bk-weweb" mode="js" url="http://localhost:8001/index.js"/> -->
     <!-- <bk-weweb class="bk-weweb" mode="js" url="http://localhost:8001/index.js"/> -->
 
-    <!-- <bk-weweb setShodowDom="true"  class="bk-weweb" url="http://v.qq.com"/> -->
-    <!-- <bk-weweb :data="data" setShodowDom="true" id='tt' url="http://localhost:8002/"/> -->
+    <!-- <bk-weweb setShadowDom="true"  class="bk-weweb" url="http://v.qq.com"/> -->
+    <!-- <bk-weweb :data="data" setShadowDom="true" id='tt' url="http://localhost:8002/"/> -->
   </div>
 </template>
 

@@ -88,7 +88,7 @@ module.exports = [
       vue: eslintVuePlugin,
     },
     rules: {
-      ...eslintVuePlugin.configs['recommended'].rules,
+      ...eslintVuePlugin.configs.recommended.rules,
       '@typescript-eslint/explicit-member-accessibility': OFF,
       '@typescript-eslint/indent': ['error', 2],
       'comma-dangle': ['error', 'always-multiline'],

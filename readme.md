@@ -9,17 +9,18 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/TencentBlueKing/bk-weweb/pulls)
 
 [English](readme_en.md) | 简体中文
+
 ## Overview
 
 ️🔧 BlueKing bk-weweb 是一款跨框架、无依赖、可伸缩的 无任何侵入的支持微应用、微模块统一的轻量微前端框架工具
 
 ## Features
 
-* [Basic] 支持多应用、多模块、及混合应用
-* [Basic] bk-weweb webcomponent
-* [Basic] 丰富简单的hooks
-* [Basic] 支持预加载资源
-* [Basic] 主应用与子应用、子模块之间共享缓存资源
+- [Basic] 支持多应用、多模块、及混合应用
+- [Basic] bk-weweb webcomponent
+- [Basic] 丰富简单的hooks
+- [Basic] 支持预加载资源
+- [Basic] 主应用与子应用、子模块之间共享缓存资源
 
 ## Getting started
 
@@ -33,10 +34,9 @@ $ npm install @blueking/bk-weweb
 
 > 更多用法参考：[使用文档](https://github.com/TencentBlueKing/bk-weweb/blob/main/docs/docs/intro/hooks.md)
 
-
 **基础用法**
 
-````javascript
+```javascript
 import '@blueking/bk-weweb'
 
 // 微应用
@@ -44,12 +44,12 @@ import '@blueking/bk-weweb'
 
 // 微模块
 <bk-weweb mode='js' url='http://xxx.xx.x.js' />
-````
+```
 
 **自定义微应用容器**
 
 #### 1. 自定义微应用容器
-```javascript
+
 <template>
   <div class="bk-weweb">
     <div ref="instanceWrap"/>
@@ -69,10 +69,10 @@ export default defineComponent({
           showSourceCode: true,
           scopeCss: true,
           scopeLocation: true,
-          setShodowDom: true,
+          setShadowDom: true,
           keepAlive: false,
           data: {
-            
+          
           }
         })
       mount(appKey, instanceWrap.value)
@@ -93,7 +93,6 @@ export default defineComponent({
     height: 200px;
   }
 </style>
-```
 
 #### 2. 自定义微模块容器
 
@@ -157,6 +156,7 @@ export default defineComponent({
 - [蓝鲸社区版交流群](https://jq.qq.com/?_wv=1027&k=5zk8F7G)
 
 ## BlueKing Community
+
 - [BKUI-VUE2](https://github.com/TencentBlueKing/bkui-vue2)：蓝鲸Vue2.0版本组件库。
 - [BKUI-VUE3](https://github.com/TencentBlueKing/bkui-vue3)：蓝鲸Vue3.0版本组件库。
 - [BK-CMDB](https://github.com/Tencent/bk-cmdb)：蓝鲸配置平台（蓝鲸 CMDB）是一个面向资产及应用的企业级配置管理平台。
@@ -168,7 +168,7 @@ export default defineComponent({
 
 ## Contributing
 
-如果你有好的意见或建议，欢迎给我们提 Issues 或 Pull Requests，为蓝鲸开源社区贡献力量。   
+如果你有好的意见或建议，欢迎给我们提 Issues 或 Pull Requests，为蓝鲸开源社区贡献力量。
 [腾讯开源激励计划](https://opensource.tencent.com/contribution) 鼓励开发者的参与和贡献，期待你的加入。
 
 ## License

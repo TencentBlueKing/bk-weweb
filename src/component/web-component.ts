@@ -59,6 +59,8 @@ export enum WewebCustomAttrs {
   /** 是否开启 location 路由隔离 */
   scopeLocation = 'scopeLocation',
   /** 是否启用 Shadow DOM */
+  setShadowDom = 'setShadowDom',
+  /** @deprecated 请使用 setShadowDom 代替 */
   setShodowDom = 'setShodowDom',
   /** 是否显示源码 */
   showSourceCode = 'showSourceCode',
@@ -108,7 +110,7 @@ export default class BkWewebElement extends HTMLElement {
     if (!this.appKey) return;
 
     // 如果需要 Shadow DOM，则创建
-    if (this.getBooleanAttr(WewebCustomAttrs.setShodowDom)) {
+    if (this.setShadowDomAttr) {
       this.attachShadow({ mode: 'open' });
     }
 
@@ -143,7 +145,14 @@ export default class BkWewebElement extends HTMLElement {
       this.handleAttributeChanged();
     }
   }
-
+  /**
+   * 获取是否启用 Shadow DOM 属性
+   * @description 获取是否启用 Shadow DOM 属性 兼容旧版使用
+   * @returns boolean | undefined - 是否启用 Shadow DOM 属性
+   */
+  get setShadowDomAttr(): boolean | undefined {
+    return this.getBooleanAttr(WewebCustomAttrs.setShadowDom) ?? this.getBooleanAttr(WewebCustomAttrs.setShodowDom);
+  }
   /**
    * 组件连接到 DOM 时的回调
    * @description 当自定义元素被插入到 DOM 时触发
@@ -151,7 +160,7 @@ export default class BkWewebElement extends HTMLElement {
    */
   async connectedCallback(): Promise<void> {
     // 如果需要且尚未创建 Shadow DOM，则创建
-    if (this.getBooleanAttr(WewebCustomAttrs.setShodowDom) && !this.shadowRoot) {
+    if (this.setShadowDomAttr && !this.shadowRoot) {
       this.attachShadow({ delegatesFocus: false, mode: 'open' });
     }
 
@@ -227,7 +236,7 @@ export default class BkWewebElement extends HTMLElement {
       return {
         ...commonProps,
         mode: WewebMode.INSTANCE,
-        scopeCss: this.getBooleanAttr(WewebCustomAttrs.scopeCss) && !this.getBooleanAttr(WewebCustomAttrs.setShodowDom),
+        scopeCss: this.getBooleanAttr(WewebCustomAttrs.scopeCss) && !this.setShadowDomAttr,
         scopeJs: this.getBooleanAttr(WewebCustomAttrs.scopeJs),
       };
     }
@@ -235,7 +244,7 @@ export default class BkWewebElement extends HTMLElement {
     return {
       ...commonProps,
       mode: WewebMode.APP,
-      scopeCss: !this.getBooleanAttr(WewebCustomAttrs.setShodowDom),
+      scopeCss: !this.setShadowDomAttr,
       scopeJs: !this.getBooleanAttr(WewebCustomAttrs.scopeJs),
       scopeLocation: this.getBooleanAttr(WewebCustomAttrs.scopeLocation),
     };
