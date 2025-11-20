@@ -226,7 +226,7 @@ function createOverriddenRemoveChild() {
 const insertAdjacentElement = createOverriddenInsertAdjacentElement();
 
 function createOverriddenInsertAdjacentElement() {
-  return function (this: HTMLElement, where: InsertPosition, element: Element): Element | null {
+  return function (this: HTMLElement, _where: InsertPosition, element: Element): Element | null {
     const node = elementAppendHandler(this, element, headAppendChild as DOMMethod) as Element | null;
     // vite项目使用 如果节点是样式元素，则重写 insertAdjacentElement 方法
     if ((node as unknown as HTMLElement)?.tagName === 'STYLE') {

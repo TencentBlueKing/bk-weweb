@@ -94,6 +94,7 @@ export class MicroInstanceModel implements BaseModel {
       this.setContainerAttribute(container);
       this.transferNodes(container);
       this.container = container;
+      this.initShadowRootContainer();
       this.sandBox?.activated();
 
       const scriptInfo = this.getScriptInfo();
@@ -111,6 +112,7 @@ export class MicroInstanceModel implements BaseModel {
   mount<T = unknown>(container?: ContainerType, callback?: CallbackFunction<T>): void {
     this.isPreLoad = false;
     this.container = container ?? this.container!;
+    this.initShadowRootContainer();
     this.state = AppState.MOUNTING;
 
     this.setContainerAttribute(this.container);
@@ -165,6 +167,20 @@ export class MicroInstanceModel implements BaseModel {
     if (this.container) {
       this.container.innerHTML = '';
       this.container = undefined;
+    }
+  }
+
+  /** 初始化ShadowRoot容器 */
+  initShadowRootContainer(): void {
+    if (this.container instanceof ShadowRoot) {
+      // inject echarts in shadowRoot
+      Object.defineProperties(this.container, {
+        getBoundingClientRect: {
+          get() {
+            return this.host.getBoundingClientRect;
+          },
+        },
+      });
     }
   }
 
