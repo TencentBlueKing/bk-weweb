@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /*
  * Tencent is pleased to support the open source community by making
  * 蓝鲸智云PaaS平台 (BlueKing PaaS) available.
@@ -75,11 +76,27 @@ export class AppCache {
     if (!name) return undefined;
 
     // 首先尝试直接从缓存键获取
-    const app = this.cache.get(name);
+    let app = this.cache.get(name);
     if (app) return app;
 
     // 如果未找到，则通过应用名称查找
-    return Array.from(this.cache.values()).find((item: BaseModel) => item.name === name);
+    for (const item of Array.from(this.cache.values())) {
+      if (item.name === name) {
+        app = item;
+        break;
+      }
+      // 如果未找到，则通过子应用缓存查找
+      const childApp = (item?.sandBox?.proxyWindow?.__getAppOrInstance__() as AppCache)?.cache.get(name);
+      if (childApp) {
+        app = childApp as BaseModel;
+        break;
+      }
+    }
+    const parentApp = (window as any).rawWindow?.__getAppOrInstance__().cache.get(name);
+    if (parentApp) {
+      return parentApp as BaseModel;
+    }
+    return app;
   }
 
   /**

@@ -30,6 +30,7 @@
  */
 
 import { fillUpPath } from '../utils';
+import { getCurrentRunningApp } from './cache';
 
 import type { BaseModel } from '../typings/model';
 
@@ -147,10 +148,17 @@ function createElementWithAppKey(rawDocument: Document, app: BaseModel) {
     tagName: K,
     options?: ElementCreationOptions | undefined,
   ) {
-    const element = rawDocument.createElement(tagName, options);
-
-    // 为元素标记所属应用
-    (element as HTMLElement & { [APP_KEY_PROPERTY]: string })[APP_KEY_PROPERTY] = app.appCacheKey;
+    const element = ((window as unknown as { rawDocument: Document }).rawDocument || rawDocument).createElement(
+      tagName,
+      options,
+    );
+    const markAppKey = (element as HTMLElement & { [APP_KEY_PROPERTY]: string })[APP_KEY_PROPERTY];
+    if (!markAppKey) {
+      const runningApp = getCurrentRunningApp();
+      // 为元素标记所属应用
+      (element as HTMLElement & { [APP_KEY_PROPERTY]: string })[APP_KEY_PROPERTY] =
+        runningApp?.appCacheKey || app.appCacheKey;
+    }
 
     // 处理图片元素的 src 属性
     if (element instanceof HTMLImageElement) {

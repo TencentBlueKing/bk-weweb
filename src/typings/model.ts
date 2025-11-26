@@ -47,6 +47,8 @@ export interface IBaseModelProps {
   id?: string | null;
   /** 是否预加载 */
   isPreLoad?: boolean;
+  /** 获取资源的函数 */
+  fetchSource?: typeof fetchSource;
 }
 
 /** 微应用模式属性配置 */
