@@ -17,5 +17,9 @@
   ],
   "preCI.localCodeCheck.checkerSet.TS": [
     "ts_standard"
+  ],
+  "cSpell.words": [
+    "codegen",
+    "modelcontextprotocol"
   ]
 }
