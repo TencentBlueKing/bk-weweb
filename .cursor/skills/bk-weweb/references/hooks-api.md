@@ -1,10 +1,25 @@
-# Hooks API 详解
+# Hooks API 参考
 
-## 导入
+## 目录
+
+- [概述](#概述)
+- [加载类 Hooks](#加载类-hooks)
+- [生命周期 Hooks](#生命周期-hooks)
+- [预加载 Hooks](#预加载-hooks)
+- [生命周期流程图](#生命周期流程图)
+- [GitHub 文档](#github-文档)
+
+## 概述
+
+BK-WeWeb Hooks 是一套用于编程式控制微应用和微模块生命周期的函数 API。相比 Web Component 标签，使用 Hooks 可以：
+
+- **保持数据引用**：直接传递对象，无需 JSON 序列化
+- **精细的控制**：完全控制加载、挂载、卸载时机
+- **获取导出实例**：获取子应用/模块导出的方法和状态
+- **自定义容器**：灵活选择渲染容器
 
 ```typescript
 import {
-  load,
   loadApp,
   loadInstance,
   mount,
@@ -19,7 +34,7 @@ import {
 } from '@blueking/bk-weweb';
 ```
 
-## 加载 API
+## 加载类 Hooks
 
 ### loadApp
 
@@ -29,32 +44,30 @@ import {
 function loadApp(options: IAppModelProps): Promise<MicroAppModel>;
 ```
 
-**参数**：
+**参数：**
 
-| 参数          | 类型    | 默认值 | 说明             |
-| ------------- | ------- | ------ | ---------------- |
-| url           | string  | -      | 入口 URL（必填） |
-| id            | string  | -      | 唯一标识         |
-| scopeJs       | boolean | true   | JS 沙箱          |
-| scopeCss      | boolean | true   | CSS 隔离         |
-| scopeLocation | boolean | false  | 路由隔离         |
-| setShadowDom  | boolean | false  | Shadow DOM       |
-| keepAlive     | boolean | false  | 缓存模式         |
-| data          | object  | -      | 传递数据         |
-| initSource    | array   | -      | 预加载资源       |
+| 属性          | 类型      | 默认值  | 说明                 |
+| ------------- | --------- | ------- | -------------------- |
+| url           | `string`  | -       | 应用入口 URL（必填） |
+| id            | `string`  | -       | 应用唯一标识符       |
+| scopeJs       | `boolean` | `true`  | JS 沙箱隔离          |
+| scopeCss      | `boolean` | `true`  | CSS 样式隔离         |
+| scopeLocation | `boolean` | `false` | 路由隔离             |
+| setShadowDom  | `boolean` | `false` | Shadow DOM 模式      |
+| keepAlive     | `boolean` | `false` | 缓存模式             |
+| data          | `object`  | -       | 传递给子应用的数据   |
+| initSource    | `array`   | -       | 初始化资源列表       |
 
-**示例**：
+**示例：**
 
 ```typescript
-const model = await loadApp({
+const app = await loadApp({
   url: 'http://localhost:8001/',
   id: 'my-app',
   scopeJs: true,
   scopeCss: true,
   data: { userId: '123' },
 });
-
-console.log(model.status); // 应用状态
 ```
 
 ### loadInstance
@@ -65,21 +78,21 @@ console.log(model.status); // 应用状态
 function loadInstance(options: IJsModelProps): Promise<MicroInstanceModel>;
 ```
 
-**参数**：
+**参数：**
 
-| 参数       | 类型    | 默认值 | 说明                |
-| ---------- | ------- | ------ | ------------------- |
-| url        | string  | -      | JS 模块 URL（必填） |
-| id         | string  | -      | 唯一标识（必填）    |
-| mode       | 'js'    | -      | 必须为 'js'         |
-| container  | Element | -      | 挂载容器            |
-| scopeJs    | boolean | false  | JS 沙箱             |
-| scopeCss   | boolean | true   | CSS 隔离            |
-| keepAlive  | boolean | false  | 缓存模式            |
-| data       | object  | -      | 传递数据            |
-| initSource | array   | -      | 预加载资源          |
+| 属性       | 类型          | 默认值  | 说明                                  |
+| ---------- | ------------- | ------- | ------------------------------------- |
+| url        | `string`      | -       | JS 模块 URL（必填）                   |
+| id         | `string`      | -       | 模块唯一标识符                        |
+| mode       | `WewebMode`   | -       | 必须为 `WewebMode.INSTANCE` 或 `'js'` |
+| container  | `HTMLElement` | -       | 渲染容器                              |
+| scopeJs    | `boolean`     | `false` | JS 沙箱隔离                           |
+| scopeCss   | `boolean`     | `true`  | CSS 样式隔离                          |
+| keepAlive  | `boolean`     | `false` | 缓存模式                              |
+| data       | `object`      | `{}`    | 传递给模块的数据                      |
+| initSource | `array`       | `[]`    | 依赖资源列表                          |
 
-**示例**：
+**示例：**
 
 ```typescript
 const instance = await loadInstance({
@@ -87,7 +100,8 @@ const instance = await loadInstance({
   id: 'my-module',
   mode: WewebMode.INSTANCE,
   container: document.getElementById('container'),
-  data: { chartType: 'line' },
+  scopeJs: true,
+  data: { type: 'chart' },
 });
 ```
 
@@ -99,21 +113,17 @@ const instance = await loadInstance({
 function load(options: IBaseModelProps): Promise<BaseModel>;
 ```
 
-## 生命周期 API
+## 生命周期 Hooks
 
 ### mount
 
-挂载应用到容器。
+将已加载的应用挂载到指定容器。
 
 ```typescript
-function mount<T>(
-  id: string,
-  container: HTMLElement | ShadowRoot,
-  callback?: (instance: BaseModel, exportInstance?: T) => void,
-): void;
+function mount(appKey: string, container?: HTMLElement, callback?: (app: BaseModel) => void): void;
 ```
 
-**示例**：
+**示例：**
 
 ```typescript
 await loadApp({ url: '...', id: 'my-app' });
@@ -122,74 +132,69 @@ mount('my-app', document.getElementById('container'));
 
 ### unmount
 
-卸载应用。
+卸载已挂载的应用。
 
 ```typescript
-function unmount(id: string, needDestroy?: boolean): void;
+function unmount(appKey: string): void;
 ```
 
-**参数**：
-
-- `needDestroy`: 是否销毁缓存，默认 false
-
-**示例**：
+**示例：**
 
 ```typescript
-unmount('my-app'); // 卸载但保留缓存
-unmount('my-app', true); // 卸载并销毁缓存
+unmount('my-app');
 ```
 
 ### activated
 
-激活应用（keepAlive 模式）。
+激活已停用的应用（keepAlive 模式）。
 
 ```typescript
-function activated<T>(
-  id: string,
-  container: HTMLElement | ShadowRoot,
-  callback?: (instance: BaseModel, exportInstance?: T) => void,
+function activated(
+  appKey: string,
+  container: HTMLElement,
+  callback?: (app: BaseModel, exportInstance?: any) => void,
 ): void;
 ```
 
-**示例**：
+**示例：**
 
 ```typescript
-// 激活并获取导出实例
-activated('my-module', container, (instance, exportInstance) => {
-  console.log('激活完成', exportInstance);
+activated('my-app', container, (app, exportInstance) => {
+  console.log('应用已激活', exportInstance);
+  // 可调用模块导出的方法
   exportInstance?.update({ newData: true });
 });
 ```
 
 ### deactivated
 
-停用应用（keepAlive 模式）。
+停用已激活的应用（keepAlive 模式），保留 DOM 和状态。
 
 ```typescript
-function deactivated(id: string): void;
+function deactivated(appKey: string): void;
 ```
 
-**示例**：
+**示例：**
 
 ```typescript
-deactivated('my-app'); // 停用但保留 DOM 状态
+deactivated('my-app');
 ```
 
 ### unload
 
-删除缓存资源。
+删除缓存的应用资源。
 
 ```typescript
 function unload(url: string): void;
 ```
 
-**示例**：
+**示例：**
 
 ```typescript
-unload('http://localhost:8001/'); // 完全删除缓存
+unload('http://localhost:8001/');
 ```
 
-## 预加载 API
+## 预加载 Hooks
 
 ### preLoadApp
 
@@ -199,16 +204,24 @@ unload('http://localhost:8001/'); // 完全删除缓存
 function preLoadApp(options: IAppModelProps): void;
 ```
 
-**示例**：
+**示例：**
 
 ```typescript
-// 应用启动后预加载
+// 页面加载完成后预加载
 window.addEventListener('load', () => {
   setTimeout(() => {
-    preLoadApp({ url: 'http://localhost:8001/', id: 'app-1' });
-    preLoadApp({ url: 'http://localhost:8002/', id: 'app-2' });
+    preLoadApp({
+      url: 'http://localhost:8001/',
+      id: 'dashboard-app',
+      scopeJs: true,
+    });
   }, 2000);
 });
+
+// 需要时直接挂载
+function showDashboard() {
+  mount('dashboard-app', document.getElementById('container'));
+}
 ```
 
 ### preLoadInstance
@@ -219,164 +232,123 @@ window.addEventListener('load', () => {
 function preLoadInstance(options: IJsModelProps): void;
 ```
 
-**示例**：
+**示例：**
 
 ```typescript
 preLoadInstance({
   url: 'http://localhost:8002/chart.js',
   id: 'chart-widget',
   mode: WewebMode.INSTANCE,
-  initSource: ['https://cdn.jsdelivr.net/npm/echarts@5.0.0/dist/echarts.min.js'],
 });
 ```
 
 ### preLoadSource
 
-预加载资源文件。
+预加载资源文件（JS/CSS）。
 
 ```typescript
 function preLoadSource(sourceList: string[] | (() => Promise<string[]>)): void;
 ```
 
-**示例**：
+**示例：**
 
 ```typescript
-// 静态列表
+// 静态资源列表
 preLoadSource(['https://cdn.example.com/vue.min.js', 'https://cdn.example.com/echarts.min.js']);
 
-// 动态获取
+// 动态获取资源列表
 preLoadSource(async () => {
-  const res = await fetch('/api/common-resources');
-  return res.json();
+  const response = await fetch('/api/common-resources');
+  const data = await response.json();
+  return data.resources;
 });
 ```
 
-## 类型定义
+## 生命周期流程图
 
-### WewebMode
+### 微应用生命周期
 
-```typescript
-enum WewebMode {
-  APP = 'app', // 微应用
-  INSTANCE = 'js', // 微模块
-  CONFIG = 'config', // 保留
-}
+```
+                    loadApp()
+                        │
+                        ▼
+    ┌───────────────────────────────────────┐
+    │              LOADING                   │
+    │         (加载 HTML/CSS/JS)             │
+    └───────────────────────────────────────┘
+                        │
+                        ▼
+    ┌───────────────────────────────────────┐
+    │              LOADED                    │
+    │           (资源加载完成)               │
+    └───────────────────────────────────────┘
+                        │
+                        ▼ mount()
+    ┌───────────────────────────────────────┐
+    │              MOUNTED                   │
+    │             (已挂载)                   │
+    └───────────────────────────────────────┘
+                        │
+          ┌─────────────┴─────────────┐
+          │                           │
+          ▼ unmount()                 ▼ deactivated()
+    ┌───────────┐              ┌───────────────┐
+    │  UNMOUNT  │              │  DEACTIVATED  │
+    │  (已卸载) │              │   (已停用)    │
+    └───────────┘              └───────────────┘
+                                      │
+                                      ▼ activated()
+                               ┌───────────────┐
+                               │   ACTIVATED   │
+                               │   (已激活)    │
+                               └───────────────┘
 ```
 
-### IAppModelProps
+### 微模块生命周期
 
-```typescript
-interface IAppModelProps {
-  url: string;
-  id?: string;
-  mode?: WewebMode;
-  container?: HTMLElement | ShadowRoot;
-  scopeJs?: boolean;
-  scopeCss?: boolean;
-  scopeLocation?: boolean;
-  setShadowDom?: boolean;
-  keepAlive?: boolean;
-  showSourceCode?: boolean;
-  data?: Record<string, unknown>;
-  initSource?: string[] | (() => Promise<string[]>);
-}
+```
+                  loadInstance()
+                        │
+                        ▼
+    ┌───────────────────────────────────────┐
+    │              LOADING                   │
+    │            (加载 JS)                   │
+    └───────────────────────────────────────┘
+                        │
+                        ▼
+    ┌───────────────────────────────────────┐
+    │              LOADED                    │
+    │      (执行脚本，调用 render)           │
+    └───────────────────────────────────────┘
+                        │
+                        ▼
+    ┌───────────────────────────────────────┐
+    │              MOUNTED                   │
+    │            (已挂载)                    │
+    └───────────────────────────────────────┘
+                        │
+          ┌─────────────┴─────────────┐
+          │                           │
+          ▼ unmount()                 ▼ deactivated()
+    ┌───────────┐              ┌───────────────┐
+    │  UNMOUNT  │              │  DEACTIVATED  │
+    └───────────┘              └───────────────┘
+                                      │
+                                      ▼ activated()
+                               ┌───────────────┐
+                               │   ACTIVATED   │
+                               └───────────────┘
 ```
 
-### IJsModelProps
+## GitHub 文档
 
-```typescript
-interface IJsModelProps {
-  url: string;
-  id: string;
-  mode: 'js' | WewebMode.INSTANCE;
-  container?: HTMLElement | ShadowRoot;
-  scopeJs?: boolean;
-  scopeCss?: boolean;
-  keepAlive?: boolean;
-  showSourceCode?: boolean;
-  data?: Record<string, unknown>;
-  initSource?: string[] | (() => Promise<string[]>);
-}
-```
+详细文档请访问：
 
-### CallbackFunction
-
-```typescript
-type CallbackFunction<T = unknown> = (instance: BaseModel, exportInstance?: T) => void;
-```
-
-## 完整工作流示例
-
-### 微应用工作流
-
-```typescript
-import { loadApp, mount, unmount, preLoadApp } from '@blueking/bk-weweb';
-
-// 1. 预加载（可选）
-preLoadApp({ url: 'http://localhost:8001/', id: 'dashboard' });
-
-// 2. 加载
-await loadApp({
-  url: 'http://localhost:8001/',
-  id: 'dashboard',
-  scopeJs: true,
-  scopeCss: true,
-  data: { userId: '123' },
-});
-
-// 3. 挂载
-mount('dashboard', document.getElementById('container'));
-
-// 4. 卸载
-unmount('dashboard');
-```
-
-### 微模块工作流
-
-```typescript
-import { loadInstance, activated, deactivated, WewebMode } from '@blueking/bk-weweb';
-
-// 1. 加载
-await loadInstance({
-  url: 'http://localhost:8002/widget.js',
-  id: 'chart',
-  mode: WewebMode.INSTANCE,
-  container: document.getElementById('container'),
-  keepAlive: true,
-  data: { chartType: 'line' },
-});
-
-// 2. 激活
-activated('chart', container, (instance, exportInstance) => {
-  console.log('模块激活', exportInstance);
-});
-
-// 3. 停用
-deactivated('chart');
-
-// 4. 再次激活
-activated('chart', anotherContainer);
-```
-
-### KeepAlive 工作流
-
-```typescript
-import { loadApp, activated, deactivated, unload } from '@blueking/bk-weweb';
-
-// 加载并启用 keepAlive
-await loadApp({
-  url: 'http://localhost:8001/',
-  id: 'my-app',
-  keepAlive: true,
-});
-
-// 首次激活
-activated('my-app', container1);
-
-// 切换到另一个位置
-deactivated('my-app');
-activated('my-app', container2);
-
-// 完全销毁
-unload('http://localhost:8001/');
-```
+- [Hooks 概述](https://github.com/TencentBlueKing/bk-weweb/blob/main/wikis/basic/hooks/README.md)
+- [loadApp](https://github.com/TencentBlueKing/bk-weweb/blob/main/wikis/basic/hooks/load-app.md)
+- [loadInstance](https://github.com/TencentBlueKing/bk-weweb/blob/main/wikis/basic/hooks/load-instance.md)
+- [mount](https://github.com/TencentBlueKing/bk-weweb/blob/main/wikis/basic/hooks/mount.md)
+- [unmount](https://github.com/TencentBlueKing/bk-weweb/blob/main/wikis/basic/hooks/unmount.md)
+- [activated](https://github.com/TencentBlueKing/bk-weweb/blob/main/wikis/basic/hooks/activated.md)
+- [deactivated](https://github.com/TencentBlueKing/bk-weweb/blob/main/wikis/basic/hooks/deactivated.md)
+- [预加载](https://github.com/TencentBlueKing/bk-weweb/blob/main/wikis/advanced/preload.md)
