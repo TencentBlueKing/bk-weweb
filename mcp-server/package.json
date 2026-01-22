@@ -1,6 +1,6 @@
 {
   "name": "@blueking/bk-weweb-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP Server for BK-WeWeb micro-frontend framework",
   "main": "dist/index.js",
   "type": "module",
@@ -9,10 +9,7 @@
     "bk-weweb-mcp-sse": "./dist/index.js",
     "bk-weweb-mcp-stdio": "./dist/stdio.js"
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
+  "files": ["dist", "README.md"],
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
@@ -21,13 +18,7 @@
     "start:stdio": "node dist/stdio.js",
     "prepublishOnly": "npm run build"
   },
-  "keywords": [
-    "mcp",
-    "model-context-protocol",
-    "bk-weweb",
-    "micro-frontend",
-    "blueking"
-  ],
+  "keywords": ["bk-weweb-mcp", "bk-weweb", "@blueking/bk-weweb-mcp", "blueking"],
   "author": "BlueKing",
   "license": "MIT",
   "dependencies": {
