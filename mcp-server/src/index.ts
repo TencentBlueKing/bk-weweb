@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-misused-promises */
 /*
  * Tencent is pleased to support the open source community by making
  * 蓝鲸智云PaaS平台 (BlueKing PaaS) available.
@@ -33,14 +34,38 @@
 
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import express, { type Request, type Response, type NextFunction } from 'express';
+import crypto from 'node:crypto';
 
 import { createMcpServer, SERVER_NAME, SERVER_VERSION } from './server.js';
 
 // 默认端口
 const DEFAULT_PORT = 3100;
 
-// 存储活跃的传输连接（使用 SSEServerTransport 的 sessionId）
-const transports: Map<string, SSEServerTransport> = new Map();
+// 会话信息接口
+interface SessionInfo {
+  transport: SSEServerTransport;
+  secret: string;
+}
+
+// 存储活跃的会话（包含 transport 和安全 secret）
+const sessions: Map<string, SessionInfo> = new Map();
+
+/**
+ * 生成安全的随机 secret token
+ */
+function generateSecureSecret(): string {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+/**
+ * 安全比较两个字符串（防止时序攻击）
+ */
+function secureCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+}
 
 /**
  * 启动 SSE 服务器
@@ -50,11 +75,12 @@ async function main() {
 
   const app = express();
 
-  // CORS 中间件
+  // CORS 中间件（包含 X-Session-Secret header 支持）
   app.use((_req: Request, res: Response, next: NextFunction) => {
-    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Accept');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Accept, X-Session-Secret');
+    res.header('Access-Control-Expose-Headers', 'X-Session-Secret');
     next();
   });
 
@@ -108,13 +134,21 @@ async function main() {
 
     // 使用 transport 自己的 sessionId
     const sessionId = transport.sessionId;
-    transports.set(sessionId, transport);
+
+    // 生成安全的 session secret
+    const secret = generateSecureSecret();
+
+    // 存储会话信息
+    sessions.set(sessionId, { transport, secret });
     console.log(`SSE connection established: ${sessionId}`);
+
+    // 通过 SSE 发送 secret 给客户端（仅在建立连接时发送一次）
+    res.write(`event: session-secret\ndata: ${JSON.stringify({ secret })}\n\n`);
 
     // 连接关闭时清理
     res.on('close', () => {
       console.log(`SSE connection closed: ${sessionId}`);
-      transports.delete(sessionId);
+      sessions.delete(sessionId);
     });
 
     // 创建新的 MCP 服务器实例（每个连接一个）
@@ -124,23 +158,37 @@ async function main() {
     await server.connect(transport);
   });
 
-  // 消息端点 - 接收客户端消息
+  // 消息端点 - 接收客户端消息（带安全验证）
   app.post('/messages', async (req: Request, res: Response) => {
     // 从查询参数获取 sessionId
     const sessionId = req.query.sessionId as string;
+    // 从请求头获取 session secret
+    const clientSecret = req.headers['x-session-secret'] as string;
 
     if (!sessionId) {
       res.status(400).json({ error: 'Missing sessionId parameter' });
       return;
     }
 
-    const transport = transports.get(sessionId);
-    if (!transport) {
+    if (!clientSecret) {
+      res.status(401).json({ error: 'Missing session secret' });
+      return;
+    }
+
+    const session = sessions.get(sessionId);
+    if (!session) {
       res.status(404).json({ error: 'Session not found' });
       return;
     }
 
-    await transport.handlePostMessage(req, res);
+    // 安全验证 session secret（防止会话劫持）
+    if (!secureCompare(clientSecret, session.secret)) {
+      console.warn(`Invalid session secret attempt for session: ${sessionId}`);
+      res.status(403).json({ error: 'Invalid session secret' });
+      return;
+    }
+
+    await session.transport.handlePostMessage(req, res);
   });
 
   // 启动服务器
