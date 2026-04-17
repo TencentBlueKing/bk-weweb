@@ -75,14 +75,14 @@ async function main() {
 
   const app = express();
 
-  // CORS 中间件（包含 X-Session-Secret header 支持）
-  app.use((_req: Request, res: Response, next: NextFunction) => {
-    res.header('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Accept, X-Session-Secret');
-    res.header('Access-Control-Expose-Headers', 'X-Session-Secret');
-    next();
-  });
+  // // CORS 中间件（包含 X-Session-Secret header 支持）
+  // app.use((_req: Request, res: Response, next: NextFunction) => {
+  //   res.header('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || '*');
+  //   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  //   res.header('Access-Control-Allow-Headers', 'Content-Type, Accept, X-Session-Secret');
+  //   res.header('Access-Control-Expose-Headers', 'X-Session-Secret');
+  //   next();
+  // });
 
   // 处理 OPTIONS 预检请求
   app.options('*', (_req: Request, res: Response) => {
