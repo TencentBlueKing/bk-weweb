@@ -9,7 +9,10 @@
     "bk-weweb-mcp-sse": "./dist/index.js",
     "bk-weweb-mcp-stdio": "./dist/stdio.js"
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
@@ -18,19 +21,24 @@
     "start:stdio": "node dist/stdio.js",
     "prepublishOnly": "npm run build"
   },
-  "keywords": ["bk-weweb-mcp", "bk-weweb", "@blueking/bk-weweb-mcp", "blueking"],
+  "keywords": [
+    "bk-weweb-mcp",
+    "bk-weweb",
+    "@blueking/bk-weweb-mcp",
+    "blueking"
+  ],
   "author": "BlueKing",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.25.3",
-    "express": "4.22.1",
+    "express": "5.2.1",
     "zod": "4.3.5"
   },
   "devDependencies": {
-    "@types/express": "4.17.25",
-    "@types/node": "22.19.7",
+    "@types/express": "5.0.6",
+    "@types/node": "25.6.2",
     "tsx": "4.7.0",
-    "typescript": "5.3.0"
+    "typescript": "6.0.3"
   },
   "engines": {
     "node": ">=22.0.0"
