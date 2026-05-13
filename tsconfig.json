@@ -8,7 +8,7 @@
     "./prettier.config.js",
     "./*.js",
     "index.d.ts",
-    "./tsup.config.ts"
+    "tsdown.config.ts"
   ],
   "exclude": ["node_modules", "dist"],
   "compilerOptions": {

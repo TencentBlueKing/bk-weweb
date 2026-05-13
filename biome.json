@@ -1,7 +1,19 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
-  "organizeImports": {
-    "enabled": false
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "root": true,
+  "files": {
+    "includes": [
+      "**",
+      "!node_modules",
+      "!*src/monitor-api/modules",
+      "!**/*.scss",
+      "!**/*.css",
+      "!**/*.less",
+      "!**/*.sass",
+      "!**/*.png",
+      "!**/*.svg",
+      "!**/*.vue"
+    ]
   },
   "vcs": {
     "enabled": true,
@@ -13,10 +25,14 @@
       "recommended": true,
       "suspicious": {
         "noExplicitAny": {
-          "level": "off"
+          "level": "warn"
         },
         "noAssignInExpressions": "warn",
-        "noArrayIndexKey": "warn"
+        "noArrayIndexKey": "warn",
+        "noConfusingVoidType": {
+          "level": "warn",
+          "fix": "none"
+        }
       },
       "style": {
         "useSelfClosingElements": {
@@ -46,11 +62,19 @@
         "useKeyWithMouseEvents": "off",
         "useKeyWithClickEvents": "off",
         "noSvgWithoutTitle": "off",
-        "useValidAnchor": "off"
+        "useValidAnchor": "off",
+        "noLabelWithoutControl": "off",
+        "noStaticElementInteractions": "off"
+      },
+      "correctness": {
+        "useJsxKeyInIterable": "error",
+        "noUnusedVariables": "error",
+        "noUnusedImports": "error"
       }
     }
   },
   "formatter": {
+    "enabled": true,
     "indentStyle": "space",
     "indentWidth": 2,
     "lineEnding": "lf",
@@ -58,16 +82,33 @@
     "attributePosition": "multiline"
   },
   "javascript": {
+    "parser": {
+      "jsxEverywhere": false
+    },
+    "linter": {
+      "enabled": true
+    },
     "formatter": {
       "quoteStyle": "single",
       "jsxQuoteStyle": "single",
       "quoteProperties": "asNeeded",
-      "trailingCommas": "es5",
+      "trailingCommas": "all",
       "semicolons": "always",
       "arrowParentheses": "asNeeded",
       "bracketSpacing": true,
       "bracketSameLine": false,
       "attributePosition": "multiline"
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "off",
+        "useSortedAttributes": "off",
+        "useSortedKeys": "off",
+        "useSortedProperties": "off"
+      }
     }
   }
 }

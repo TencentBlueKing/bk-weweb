@@ -24,7 +24,8 @@
  * IN THE SOFTWARE.
  */
 
-const prettierConfig = require('@blueking/bkui-lint/prettier');
+// 包内入口为 prettier.mjs，无 ./prettier 子路径
+const prettierConfig = require('@blueking/bkui-lint/prettier.mjs').default;
 module.exports = {
   ...prettierConfig,
 };

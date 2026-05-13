@@ -23,18 +23,15 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-import { defineConfig } from 'tsup';
+import { defineConfig } from 'tsdown';
 export default defineConfig({
   entry: ['src/index.ts', 'src/vite/helper.ts'],
-  format: ['esm'],
+  format: ['es'],
   dts: true,
-  splitting: false,
   sourcemap: true,
   clean: true,
   minify: false,
-  outExtension({ format }) {
-    return {
-      js: `.${format}.js`,
-    };
-  },
+  deps: {
+    neverBundle: ['vite', 'esbuild'],
+  }
 });

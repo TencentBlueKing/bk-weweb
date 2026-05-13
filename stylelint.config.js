@@ -23,6 +23,5 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-module.exports = {
-  extends: ['@blueking/bkui-lint/stylelint.js'],
-};
+// 包内入口为 stylelint.mjs，无 ./stylelint.js
+module.exports = require('@blueking/bkui-lint/stylelint.mjs').default;

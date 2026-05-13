@@ -30,7 +30,8 @@ const OFF = 0;
 // const WARNING = 1;
 // const ERROR = 2;
 module.exports = [
-  ...require('@blueking/bkui-lint/eslint'),
+  // 包内入口为 eslint.mjs，无 ./eslint 子路径
+  ...require('@blueking/bkui-lint/eslint.mjs').default,
   {
     rules: {
       'vue/multi-word-component-names': OFF,
@@ -61,7 +62,8 @@ module.exports = [
       vue: eslintVuePlugin,
     },
     rules: {
-      ...eslintVuePlugin.configs['vue3-recommended'].rules,
+      // eslint-plugin-vue v10：Vue 3 推荐集为 configs.recommended（已无 vue3-recommended）
+      ...eslintVuePlugin.configs.recommended.rules,
       '@typescript-eslint/explicit-member-accessibility': OFF,
       '@typescript-eslint/indent': ['error', 2],
       'comma-dangle': ['error', 'always-multiline'],
@@ -88,7 +90,7 @@ module.exports = [
       vue: eslintVuePlugin,
     },
     rules: {
-      ...eslintVuePlugin.configs.recommended.rules,
+      ...eslintVuePlugin.configs['vue2-recommended'].rules,
       '@typescript-eslint/explicit-member-accessibility': OFF,
       '@typescript-eslint/indent': ['error', 2],
       'comma-dangle': ['error', 'always-multiline'],
