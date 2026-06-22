@@ -11,8 +11,6 @@
     "start:install": "run-p install:*",
     "postversion": "git push && git push --tags",
     "build": "tsdown --env.NODE_ENV production",
-    "doc:install": "cd ./docs && npm i",
-    "doc": "cd ./docs && yarn dev --port 8005",
     "instance:install": "cd ./examples/instance && npm i",
     "lint:fix": "eslint ./src/ --ext .js,.ts,.vue --cache --fix",
     "check": "tsc -p ./tsconfig.json --incremental --noEmit",
