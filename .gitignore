@@ -3,6 +3,12 @@ node_modules/
 dist/
 /typings/
 
+# vitepress
+wikis/.vitepress/cache
+wikis/.vitepress/dist
+.vitepress/dist
+.vitepress/cache
+
 # editor config
 .idea
 *.iml

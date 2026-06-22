@@ -27,7 +27,10 @@
     "dev:vue3": "cd examples/children/vue3 && yarn start",
     "dev:angular": "cd examples/children/angular && yarn start",
     "dev:vite": "cd examples/children/vite && yarn start",
-    "dev:instance": "cd examples/children/instance && yarn start"
+    "dev:instance": "cd examples/children/instance && yarn start",
+    "docs:dev": "vitepress dev wikis",
+    "docs:build": "vitepress build wikis",
+    "docs:preview": "vitepress preview wikis"
   },
   "publishConfig": {
     "access": "public"
@@ -63,6 +66,8 @@
     "tslib": "2.8.1",
     "typescript": "6.0.3",
     "vite": "8.0.12",
+    "vitepress": "2.0.0-alpha.17",
+    "vue": "^3.5.38",
     "vue-eslint-parser": "10.4.0"
   },
   "engines": {
