@@ -39,7 +39,8 @@
     "custom micro web"
   ],
   "files": [
-    "dist"
+    "dist",
+    "skills"
   ],
   "author": "bk fe",
   "license": "MIT",
