@@ -1,6 +1,6 @@
 {
   "name": "@blueking/bk-weweb",
-  "version": "0.0.37",
+  "version": "0.0.38",
   "description": "bk micro frontend web",
   "private": false,
   "types": "dist/index.d.mts",
