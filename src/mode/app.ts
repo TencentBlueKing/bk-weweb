@@ -133,8 +133,9 @@ export class MicroAppModel implements BaseModel {
       // inject echarts in shadowRoot
       Object.defineProperties(this.container, {
         getBoundingClientRect: {
+          configurable: true,
           get() {
-            return this.host.getBoundingClientRect;
+            return this.host.getBoundingClientRect.bind(this.host);
           },
         },
       });
@@ -301,7 +302,10 @@ export class MicroAppModel implements BaseModel {
     const interval = setInterval(() => {
       if (iframe.contentWindow && iframe.contentWindow.location.href !== IFRAME_CONSTANTS.BLANK_ORIGIN) {
         iframe.contentWindow.stop();
-        iframe.contentDocument!.body.parentElement!.innerHTML = IFRAME_CONSTANTS.DEFAULT_HTML;
+        const rootElement = iframe.contentDocument?.body.parentElement;
+        if (rootElement) {
+          rootElement.innerHTML = IFRAME_CONSTANTS.DEFAULT_HTML;
+        }
         clearInterval(interval);
         resolve(iframe);
       }
@@ -312,7 +316,9 @@ export class MicroAppModel implements BaseModel {
   private renderAppContent(): void {
     if (!this.source) return;
 
-    const clonedNode = this.source.html!.cloneNode(true);
+    const clonedNode = this.source.html?.cloneNode(true);
+    if (!clonedNode) return;
+
     const fragment = document.createDocumentFragment();
 
     for (const node of Array.from(clonedNode.childNodes)) {
@@ -321,7 +327,7 @@ export class MicroAppModel implements BaseModel {
     }
 
     this.container!.innerHTML = '';
-    this.container!.appendChild(fragment);
+    this.container?.appendChild(fragment);
   }
 
   /** 检查是否需要重新加载 */
